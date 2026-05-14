@@ -569,7 +569,7 @@ function generateMockDltHistory() {
   const history = [];
   const baseDate = new Date('2026-05-13');
   for (let i = 0; i < 150; i++) {
-    const daysToSubtract = i * 2 + (i % 3 === 0 ? 1 : 0);
+    const daysToSubtract = (149 - i) * 2 + ((149 - i) % 3 === 0 ? 1 : 0);
     const date = new Date(baseDate);
     date.setDate(date.getDate() - daysToSubtract);
     const dateStr = formatDate(date);
@@ -587,7 +587,7 @@ function generateMockDltHistory() {
     }
     blues.sort((a, b) => a - b);
     history.push({
-      issue: `2026${(150 - i).toString().padStart(3, '0')}`,
+      issue: `2026${(i + 1).toString().padStart(3, '0')}`,
       date: dateStr,
       reds,
       blues,
@@ -602,7 +602,7 @@ function generateMockSsqHistory() {
   const history = [];
   const baseDate = new Date('2026-05-13');
   for (let i = 0; i < 150; i++) {
-    const daysToSubtract = i * 2;
+    const daysToSubtract = (149 - i) * 2;
     const date = new Date(baseDate);
     date.setDate(date.getDate() - daysToSubtract);
     const dateStr = formatDate(date);
@@ -615,7 +615,7 @@ function generateMockSsqHistory() {
     reds.sort((a, b) => a - b);
     const blue = Math.floor(Math.random() * 16) + 1;
     history.push({
-      issue: `2026${(150 - i).toString().padStart(3, '0')}`,
+      issue: `2026${(i + 1).toString().padStart(3, '0')}`,
       date: dateStr,
       reds,
       blue,

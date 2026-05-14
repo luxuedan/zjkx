@@ -7,6 +7,9 @@ let dltRedSelected = [];
 let dltBlueSelected = [];
 let ssqRedSelected = [];
 let ssqBlueSelected = [];
+
+let calcDltRed = [];
+let calcDltBlue = [];
 let pl3Hundred = null;
 let pl3Ten = null;
 let pl3Unit = null;
@@ -58,6 +61,7 @@ function init() {
   loadSavedHistory();
   loadHistoryData();
   initTrendCharts();
+  initCalculator();
   updateSidePanels('dlt');
 }
 
@@ -101,6 +105,10 @@ function showMainContent() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('main-content').style.display = 'flex';
   document.getElementById('user-info').textContent = '欢迎, ' + currentUser.nickname;
+  loadHistoryData();
+  initTrendCharts();
+  initCalculator();
+  updateSidePanels('dlt');
 }
 
 function logout() {
@@ -483,21 +491,384 @@ function loadHistoryData() {
   loadPl5History();
 }
 
+function initCalculator() {
+  const redContainer = document.getElementById('dlt-calc-red-numbers');
+  const blueContainer = document.getElementById('dlt-calc-blue-numbers');
+  
+  let redHtml = '';
+  for (let i = 1; i <= 35; i++) {
+    redHtml += `<span class="number-btn red" onclick="toggleCalcNumber('dlt', 'red', ${i})" id="calc-dlt-red-${i}">${i}</span>`;
+  }
+  redContainer.innerHTML = redHtml;
+  
+  let blueHtml = '';
+  for (let i = 1; i <= 12; i++) {
+    blueHtml += `<span class="number-btn blue" onclick="toggleCalcNumber('dlt', 'blue', ${i})" id="calc-dlt-blue-${i}">${i}</span>`;
+  }
+  blueContainer.innerHTML = blueHtml;
+}
+
+function onGameTypeChange() {
+  const gameType = document.getElementById('entry-game-type').value;
+  
+  document.getElementById('entry-dlt-fields').style.display = 'none';
+  document.getElementById('entry-ssq-fields').style.display = 'none';
+  document.getElementById('entry-pl3-fields').style.display = 'none';
+  document.getElementById('entry-pl5-fields').style.display = 'none';
+  
+  document.getElementById(`entry-${gameType}-fields`).style.display = 'block';
+  
+  calculateNextIssue(gameType);
+  calculateNextDate(gameType);
+}
+
+function calculateNextIssue(gameType) {
+  let historyData;
+  let prefix = '2026';
+  
+  switch(gameType) {
+    case 'dlt':
+      historyData = dltHistoryData;
+      break;
+    case 'ssq':
+      historyData = ssqHistoryData;
+      break;
+    case 'pl3':
+      historyData = pl3HistoryData;
+      break;
+    case 'pl5':
+      historyData = pl5HistoryData;
+      break;
+  }
+  
+  if (historyData.length === 0) {
+    document.getElementById('entry-issue').value = `${prefix}001`;
+    return;
+  }
+  
+  historyData.sort((a, b) => a.issue.localeCompare(b.issue));
+  const lastIssue = historyData[historyData.length - 1].issue;
+  
+  let year = lastIssue.substring(0, 4);
+  let num = parseInt(lastIssue.substring(4)) + 1;
+  
+  if (num > 365) {
+    year = parseInt(year) + 1;
+    num = 1;
+  }
+  
+  document.getElementById('entry-issue').value = `${year}${num.toString().padStart(3, '0')}`;
+}
+
+function calculateNextDate(gameType) {
+  const today = new Date();
+  let nextDate = new Date(today);
+  
+  const dltDrawDays = [1, 3, 6];
+  const ssqDrawDays = [2, 4, 0];
+  
+  switch(gameType) {
+    case 'dlt':
+      nextDate = findNextDrawDate(today, dltDrawDays);
+      break;
+    case 'ssq':
+      nextDate = findNextDrawDate(today, ssqDrawDays);
+      break;
+    case 'pl3':
+    case 'pl5':
+      nextDate = new Date(today);
+      if (today.getHours() >= 20) {
+        nextDate.setDate(nextDate.getDate() + 1);
+      }
+      break;
+  }
+  
+  const dateStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(nextDate.getDate()).padStart(2, '0')}`;
+  document.getElementById('entry-date').value = dateStr;
+}
+
+function findNextDrawDate(currentDate, drawDays) {
+  const result = new Date(currentDate);
+  const currentDay = result.getDay();
+  
+  let daysToAdd = 0;
+  let found = false;
+  
+  for (let i = 0; i <= 7; i++) {
+    const checkDay = (currentDay + i) % 7;
+    if (drawDays.includes(checkDay)) {
+      if (i === 0) {
+        if (result.getHours() < 20) {
+          found = true;
+          break;
+        }
+      } else {
+        daysToAdd = i;
+        found = true;
+        break;
+      }
+    }
+  }
+  
+  if (!found) {
+    daysToAdd = 7 - currentDay + drawDays[0];
+  }
+  
+  result.setDate(result.getDate() + daysToAdd);
+  return result;
+}
+
+function addDrawResult() {
+  const gameType = document.getElementById('entry-game-type').value;
+  const issue = document.getElementById('entry-issue').value.trim();
+  const date = document.getElementById('entry-date').value;
+  const resultDiv = document.getElementById('entry-result');
+  
+  if (!issue || !date) {
+    showEntryResult(resultDiv, '请填写期号和日期', 'error');
+    return;
+  }
+  
+  switch(gameType) {
+    case 'dlt':
+      addDltResultNew(issue, date, resultDiv);
+      break;
+    case 'ssq':
+      addSsqResultNew(issue, date, resultDiv);
+      break;
+    case 'pl3':
+      addPl3ResultNew(issue, date, resultDiv);
+      break;
+    case 'pl5':
+      addPl5ResultNew(issue, date, resultDiv);
+      break;
+  }
+}
+
+function addDltResultNew(issue, date, resultDiv) {
+  const redsStr = document.getElementById('entry-reds').value.trim();
+  const bluesStr = document.getElementById('entry-blues').value.trim();
+  
+  if (!redsStr || !bluesStr) {
+    showEntryResult(resultDiv, '请填写完整的号码信息', 'error');
+    return;
+  }
+  
+  const reds = redsStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  const blues = bluesStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  
+  if (reds.length !== 5 || reds.some(n => n < 1 || n > 35)) {
+    showEntryResult(resultDiv, '前区号码必须是5个1-35之间的数字', 'error');
+    return;
+  }
+  
+  if (blues.length !== 2 || blues.some(n => n < 1 || n > 12)) {
+    showEntryResult(resultDiv, '后区号码必须是2个1-12之间的数字', 'error');
+    return;
+  }
+  
+  reds.sort((a, b) => a - b);
+  blues.sort((a, b) => a - b);
+  
+  const dateObj = new Date(date);
+  const weekDay = getDayOfWeek(dateObj);
+  
+  const newRecord = {
+    issue: issue,
+    date: date,
+    weekDay: weekDay,
+    reds: reds,
+    blues: blues,
+    sum: reds.reduce((a, b) => a + b, 0),
+    range: Math.max(...reds) - Math.min(...reds)
+  };
+  
+  saveDltRecord(newRecord);
+  showEntryResult(resultDiv, '大乐透开奖结果录入成功！', 'success');
+  calculateNextIssue('dlt');
+}
+
+function addSsqResultNew(issue, date, resultDiv) {
+  const redsStr = document.getElementById('entry-reds').value.trim();
+  const blueStr = document.getElementById('entry-blues').value.trim();
+  
+  if (!redsStr || !blueStr) {
+    showEntryResult(resultDiv, '请填写完整的号码信息', 'error');
+    return;
+  }
+  
+  const reds = redsStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  const blue = parseInt(blueStr);
+  
+  if (reds.length !== 6 || reds.some(n => n < 1 || n > 33)) {
+    showEntryResult(resultDiv, '红球号码必须是6个1-33之间的数字', 'error');
+    return;
+  }
+  
+  if (isNaN(blue) || blue < 1 || blue > 16) {
+    showEntryResult(resultDiv, '蓝球号码必须是1-16之间的数字', 'error');
+    return;
+  }
+  
+  reds.sort((a, b) => a - b);
+  
+  const dateObj = new Date(date);
+  const weekDay = getDayOfWeek(dateObj);
+  
+  const newRecord = {
+    issue: issue,
+    date: date,
+    weekDay: weekDay,
+    reds: reds,
+    blue: blue,
+    sum: reds.reduce((a, b) => a + b, 0),
+    range: Math.max(...reds) - Math.min(...reds)
+  };
+  
+  saveSsqRecord(newRecord);
+  showEntryResult(resultDiv, '双色球开奖结果录入成功！', 'success');
+  calculateNextIssue('ssq');
+}
+
+function addPl3ResultNew(issue, date, resultDiv) {
+  const numsStr = document.getElementById('entry-nums').value.trim();
+  
+  if (!numsStr) {
+    showEntryResult(resultDiv, '请填写开奖号码', 'error');
+    return;
+  }
+  
+  const nums = numsStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  
+  if (nums.length !== 3 || nums.some(n => n < 0 || n > 9)) {
+    showEntryResult(resultDiv, '开奖号码必须是3个0-9之间的数字', 'error');
+    return;
+  }
+  
+  const dateObj = new Date(date);
+  const weekDay = getDayOfWeek(dateObj);
+  
+  const newRecord = {
+    issue: issue,
+    date: date,
+    weekDay: weekDay,
+    nums: nums,
+    sum: nums.reduce((a, b) => a + b, 0)
+  };
+  
+  savePl3Record(newRecord);
+  showEntryResult(resultDiv, '排列三开奖结果录入成功！', 'success');
+  calculateNextIssue('pl3');
+}
+
+function addPl5ResultNew(issue, date, resultDiv) {
+  const numsStr = document.getElementById('entry-nums').value.trim();
+  
+  if (!numsStr) {
+    showEntryResult(resultDiv, '请填写开奖号码', 'error');
+    return;
+  }
+  
+  const nums = numsStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  
+  if (nums.length !== 5 || nums.some(n => n < 0 || n > 9)) {
+    showEntryResult(resultDiv, '开奖号码必须是5个0-9之间的数字', 'error');
+    return;
+  }
+  
+  const dateObj = new Date(date);
+  const weekDay = getDayOfWeek(dateObj);
+  
+  const newRecord = {
+    issue: issue,
+    date: date,
+    weekDay: weekDay,
+    nums: nums,
+    sum: nums.reduce((a, b) => a + b, 0)
+  };
+  
+  savePl5Record(newRecord);
+  showEntryResult(resultDiv, '排列五开奖结果录入成功！', 'success');
+  calculateNextIssue('pl5');
+}
+
+function saveDltRecord(record) {
+  const existingIndex = dltHistoryData.findIndex(h => h.issue === record.issue);
+  if (existingIndex > -1) {
+    dltHistoryData[existingIndex] = record;
+  } else {
+    dltHistoryData.push(record);
+    dltHistoryData.sort((a, b) => a.issue.localeCompare(b.issue));
+  }
+  saveHistoryData();
+  loadDltHistory();
+  renderDltTrendChart();
+  updateSidePanels('dlt');
+}
+
+function saveSsqRecord(record) {
+  const existingIndex = ssqHistoryData.findIndex(h => h.issue === record.issue);
+  if (existingIndex > -1) {
+    ssqHistoryData[existingIndex] = record;
+  } else {
+    ssqHistoryData.push(record);
+    ssqHistoryData.sort((a, b) => a.issue.localeCompare(b.issue));
+  }
+  saveHistoryData();
+  loadSsqHistory();
+  updateSidePanels('ssq');
+}
+
+function savePl3Record(record) {
+  const existingIndex = pl3HistoryData.findIndex(h => h.issue === record.issue);
+  if (existingIndex > -1) {
+    pl3HistoryData[existingIndex] = record;
+  } else {
+    pl3HistoryData.push(record);
+    pl3HistoryData.sort((a, b) => a.issue.localeCompare(b.issue));
+  }
+  saveHistoryData();
+  loadPl3History();
+}
+
+function savePl5Record(record) {
+  const existingIndex = pl5HistoryData.findIndex(h => h.issue === record.issue);
+  if (existingIndex > -1) {
+    pl5HistoryData[existingIndex] = record;
+  } else {
+    pl5HistoryData.push(record);
+    pl5HistoryData.sort((a, b) => a.issue.localeCompare(b.issue));
+  }
+  saveHistoryData();
+  loadPl5History();
+}
+
+function showEntryResult(resultDiv, message, type) {
+  resultDiv.textContent = message;
+  resultDiv.style.color = type === 'success' ? '#16a34a' : '#e53935';
+  resultDiv.style.display = 'block';
+  
+  setTimeout(() => {
+    resultDiv.style.display = 'none';
+  }, 3000);
+}
+
 function loadDltHistory() {
   const history = dltHistoryData.length > 0 ? dltHistoryData : generateMockDltHistory();
   const table = document.getElementById('dlt-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>开奖日期</th><th>星期</th><th colspan="5">开奖结果</th></tr>
-      <tr><th></th><th></th><th></th><th colspan="3">前区</th><th colspan="2">后区</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th colspan="7">开奖结果</th></tr>
+      <tr><th></th><th></th><th colspan="5">前区</th><th colspan="2">后区</th></tr>
       ${history.map(h => `
         <tr>
           <td>${h.issue}</td>
           <td>${h.date}</td>
-          <td>${h.weekDay}</td>
           <td class="red-ball">${h.reds[0]}</td>
           <td class="red-ball">${h.reds[1]}</td>
           <td class="red-ball">${h.reds[2]}</td>
+          <td class="red-ball">${h.reds[3]}</td>
+          <td class="red-ball">${h.reds[4]}</td>
           <td class="blue-ball">${h.blues[0]}</td>
           <td class="blue-ball">${h.blues[1]}</td>
         </tr>
@@ -604,56 +975,38 @@ function getDayOfWeek(date) {
 
 function generateMockDltHistory() {
   return [
-    {"issue":"26003","date":"2026-01-01","weekDay":"周四","reds":[03,08,15,22,31],"blues":[02,09],"sum":79,"range":28},
-    {"issue":"26004","date":"2026-01-04","weekDay":"周日","reds":[01,12,18,25,33],"blues":[05,10],"sum":89,"range":32},
-    {"issue":"26005","date":"2026-01-06","weekDay":"周二","reds":[05,11,19,27,35],"blues":[03,07],"sum":97,"range":30},
-    {"issue":"26006","date":"2026-01-09","weekDay":"周五","reds":[02,09,16,24,30],"blues":[01,08],"sum":81,"range":28},
-    {"issue":"26007","date":"2026-01-11","weekDay":"周日","reds":[07,14,21,28,32],"blues":[04,12],"sum":102,"range":25},
-    {"issue":"26008","date":"2026-01-13","weekDay":"周二","reds":[04,10,17,23,34],"blues":[06,11],"sum":88,"range":30},
-    {"issue":"26009","date":"2026-01-16","weekDay":"周五","reds":[06,13,20,26,29],"blues":[02,05],"sum":94,"range":23},
-    {"issue":"26010","date":"2026-01-18","weekDay":"周日","reds":[08,15,19,22,35],"blues":[03,09],"sum":99,"range":27},
-    {"issue":"26011","date":"2026-01-20","weekDay":"周二","reds":[01,09,14,27,31],"blues":[07,10],"sum":82,"range":30},
-    {"issue":"26012","date":"2026-01-23","weekDay":"周五","reds":[03,11,18,25,33],"blues":[01,06],"sum":90,"range":30},
-    {"issue":"26013","date":"2026-01-25","weekDay":"周日","reds":[05,12,17,24,30],"blues":[04,08],"sum":88,"range":25},
-    {"issue":"26014","date":"2026-01-27","weekDay":"周二","reds":[02,07,16,21,34],"blues":[05,12],"sum":80,"range":32},
-    {"issue":"26015","date":"2026-01-30","weekDay":"周五","reds":[09,13,20,26,32],"blues":[02,11],"sum":100,"range":23},
-    {"issue":"26016","date":"2026-02-01","weekDay":"周日","reds":[04,10,19,23,35],"blues":[03,07],"sum":91,"range":31},
-    {"issue":"26017","date":"2026-02-03","weekDay":"周二","reds":[01,08,15,28,31],"blues":[06,09],"sum":83,"range":30},
-    {"issue":"26018","date":"2026-02-06","weekDay":"周五","reds":[06,12,18,25,29],"blues":[01,08],"sum":90,"range":23},
-    {"issue":"26019","date":"2026-02-08","weekDay":"周日","reds":[07,14,22,27,33],"blues":[04,10],"sum":103,"range":26},
-    {"issue":"26020","date":"2026-02-10","weekDay":"周二","reds":[02,11,17,24,30],"blues":[05,12],"sum":84,"range":28},
-    {"issue":"26021","date":"2026-02-13","weekDay":"周五","reds":[03,09,16,23,34],"blues":[02,07],"sum":85,"range":31},
-    {"issue":"26022","date":"2026-02-15","weekDay":"周日","reds":[08,15,21,26,32],"blues":[03,09],"sum":102,"range":24},
-    {"issue":"26023","date":"2026-02-17","weekDay":"周二","reds":[05,13,19,25,31],"blues":[06,11],"sum":93,"range":26},
-    {"issue":"26024","date":"2026-02-20","weekDay":"周五","reds":[01,10,18,27,35],"blues":[01,08],"sum":91,"range":34},
-    {"issue":"26025","date":"2026-02-22","weekDay":"周日","reds":[04,12,16,23,28],"blues":[04,10],"sum":83,"range":24},
-    {"issue":"26026","date":"2026-02-24","weekDay":"周二","reds":[06,09,17,24,33],"blues":[05,07],"sum":89,"range":27},
-    {"issue":"26027","date":"2026-02-27","weekDay":"周五","reds":[02,08,14,21,30],"blues":[02,12],"sum":75,"range":28},
-    {"issue":"26028","date":"2026-02-29","weekDay":"周日","reds":[07,11,19,26,34],"blues":[03,09],"sum":97,"range":27},
-    {"issue":"26029","date":"2026-03-02","weekDay":"周二","reds":[03,15,20,25,32],"blues":[06,11],"sum":95,"range":29},
-    {"issue":"26030","date":"2026-03-05","weekDay":"周五","reds":[01,09,16,23,31],"blues":[01,08],"sum":80,"range":30},
-    {"issue":"26031","date":"2026-03-07","weekDay":"周日","reds":[05,12,18,27,35],"blues":[04,10],"sum":97,"range":30},
-    {"issue":"26032","date":"2026-03-09","weekDay":"周二","reds":[04,10,17,24,28],"blues":[05,07],"sum":83,"range":24},
-    {"issue":"26033","date":"2026-03-12","weekDay":"周五","reds":[06,13,21,26,33],"blues":[02,12],"sum":99,"range":27},
-    {"issue":"26034","date":"2026-03-14","weekDay":"周日","reds":[08,15,19,25,30],"blues":[03,09],"sum":97,"range":22},
-    {"issue":"26035","date":"2026-03-16","weekDay":"周二","reds":[02,07,14,22,34],"blues":[06,11],"sum":79,"range":32},
-    {"issue":"26036","date":"2026-03-19","weekDay":"周五","reds":[09,16,20,27,31],"blues":[01,08],"sum":93,"range":22},
-    {"issue":"26037","date":"2026-03-21","weekDay":"周日","reds":[03,04,17,21,27],"blues":[06,08],"sum":72,"range":24},
-    {"issue":"26038","date":"2026-03-23","weekDay":"周二","reds":[05,06,13,18,28],"blues":[07,08],"sum":70,"range":23},
-    {"issue":"26039","date":"2026-03-26","weekDay":"周五","reds":[01,02,08,14,19],"blues":[03,06],"sum":44,"range":18},
-    {"issue":"26040","date":"2026-03-28","weekDay":"周日","reds":[03,06,07,20,25],"blues":[04,07],"sum":61,"range":22},
-    {"issue":"26041","date":"2026-03-30","weekDay":"周二","reds":[01,05,21,25,27],"blues":[04,11],"sum":79,"range":26},
-    {"issue":"26042","date":"2026-04-02","weekDay":"周五","reds":[02,07,10,11,22],"blues":[10,11],"sum":52,"range":20},
-    {"issue":"26043","date":"2026-04-04","weekDay":"周日","reds":[03,07,08,15,23],"blues":[11,12],"sum":56,"range":20},
-    {"issue":"26044","date":"2026-04-06","weekDay":"周二","reds":[03,08,09,10,24],"blues":[07,10],"sum":54,"range":21},
-    {"issue":"26045","date":"2026-04-09","weekDay":"周五","reds":[01,03,09,12,15],"blues":[01,11],"sum":40,"range":14},
-    {"issue":"26046","date":"2026-04-11","weekDay":"周日","reds":[01,02,03,10,13],"blues":[06,10],"sum":29,"range":12},
-    {"issue":"26047","date":"2026-04-13","weekDay":"周二","reds":[01,05,11,14,15],"blues":[06,06],"sum":46,"range":14},
-    {"issue":"26048","date":"2026-04-16","weekDay":"周五","reds":[02,06,12,15,17],"blues":[06,10],"sum":52,"range":15},
-    {"issue":"26049","date":"2026-04-18","weekDay":"周日","reds":[03,05,07,13,16],"blues":[02,03],"sum":44,"range":13},
-    {"issue":"26050","date":"2026-04-20","weekDay":"周二","reds":[01,08,14,17,18],"blues":[08,10],"sum":58,"range":17},
-    {"issue":"26051","date":"2026-04-23","weekDay":"周五","reds":[02,09,15,18,27],"blues":[02,11],"sum":71,"range":25},
-    {"issue":"26052","date":"2026-04-25","weekDay":"周日","reds":[02,03,16,19,33],"blues":[02,12],"sum":73,"range":31}
+    {"issue":"26021","date":"2026/3/2","weekDay":"周四","reds":[5,8,12,14,17],"blues":[4,5],"sum":56,"range":13},
+    {"issue":"26022","date":"2026/3/4","weekDay":"周六","reds":[5,9,10,18,26],"blues":[5,6],"sum":68,"range":21},
+    {"issue":"26023","date":"2026/3/7","weekDay":"周二","reds":[9,25,26,27,28],"blues":[1,8],"sum":115,"range":19},
+    {"issue":"26024","date":"2026/3/9","weekDay":"周四","reds":[2,4,8,10,21],"blues":[9,12],"sum":45,"range":19},
+    {"issue":"26025","date":"2026/3/11","weekDay":"周六","reds":[3,15,24,28,29],"blues":[3,7],"sum":99,"range":26},
+    {"issue":"26026","date":"2026/3/14","weekDay":"周二","reds":[10,11,22,26,32],"blues":[1,8],"sum":101,"range":22},
+    {"issue":"26027","date":"2026/3/16","weekDay":"周四","reds":[10,10,11,12,36],"blues":[1,11],"sum":79,"range":26},
+    {"issue":"26028","date":"2026/3/18","weekDay":"周六","reds":[9,10,11,12,16],"blues":[1,11],"sum":58,"range":7},
+    {"issue":"26029","date":"2026/3/21","weekDay":"周二","reds":[3,5,27,19,30],"blues":[5,7],"sum":114,"range":27},
+    {"issue":"26030","date":"2026/3/23","weekDay":"周四","reds":[2,13,22,28,34],"blues":[5,12],"sum":99,"range":32},
+    {"issue":"26031","date":"2026/3/25","weekDay":"周六","reds":[6,8,22,29,34],"blues":[6,7],"sum":99,"range":28},
+    {"issue":"26032","date":"2026/3/28","weekDay":"周二","reds":[3,4,19,26,32],"blues":[1,12],"sum":84,"range":29},
+    {"issue":"26033","date":"2026/3/30","weekDay":"周四","reds":[11,5,7,9,18],"blues":[2,10],"sum":50,"range":13},
+    {"issue":"26034","date":"2026/4/1","weekDay":"周六","reds":[11,12,25,26,27],"blues":[8,11],"sum":101,"range":16},
+    {"issue":"26035","date":"2026/4/4","weekDay":"周二","reds":[2,22,30,33,34],"blues":[8,12],"sum":121,"range":32},
+    {"issue":"26036","date":"2026/4/6","weekDay":"周四","reds":[4,7,16,26,32],"blues":[5,8],"sum":85,"range":28},
+    {"issue":"26037","date":"2026/4/8","weekDay":"周六","reds":[8,12,13,28,32],"blues":[6,8],"sum":93,"range":24},
+    {"issue":"26038","date":"2026/4/11","weekDay":"周二","reds":[8,17,21,33,35],"blues":[6,7],"sum":114,"range":27},
+    {"issue":"26039","date":"2026/4/13","weekDay":"周四","reds":[6,11,20,26,27],"blues":[6,9],"sum":90,"range":21},
+    {"issue":"26040","date":"2026/4/15","weekDay":"周六","reds":[6,12,13,21,34],"blues":[8,9],"sum":86,"range":28},
+    {"issue":"26041","date":"2026/4/18","weekDay":"周二","reds":[24,25,27,29,34],"blues":[2,6],"sum":139,"range":10},
+    {"issue":"26042","date":"2026/4/20","weekDay":"周四","reds":[2,7,13,19,24],"blues":[3,8],"sum":65,"range":22},
+    {"issue":"26043","date":"2026/4/22","weekDay":"周六","reds":[3,8,12,14,19],"blues":[11,12],"sum":56,"range":16},
+    {"issue":"26044","date":"2026/4/25","weekDay":"周二","reds":[1,15,21,26,33],"blues":[4,7],"sum":96,"range":32},
+    {"issue":"26045","date":"2026/4/27","weekDay":"周四","reds":[1,13,18,27,33],"blues":[4,7],"sum":92,"range":32},
+    {"issue":"26046","date":"2026/4/29","weekDay":"周六","reds":[9,20,21,23,28],"blues":[6,11],"sum":101,"range":19},
+    {"issue":"26047","date":"2026/5/2","weekDay":"周二","reds":[11,17,20,23,35],"blues":[1,10],"sum":106,"range":24},
+    {"issue":"26048","date":"2026/5/4","weekDay":"周四","reds":[11,17,20,23,35],"blues":[1,10],"sum":106,"range":24},
+    {"issue":"26049","date":"2026/5/6","weekDay":"周六","reds":[11,6,14,15,17],"blues":[2,3],"sum":63,"range":11},
+    {"issue":"26050","date":"2026/5/9","weekDay":"周二","reds":[6,10,14,23,33],"blues":[8,10],"sum":86,"range":27},
+    {"issue":"26051","date":"2026/5/11","weekDay":"周四","reds":[13,18,28,32,33],"blues":[2,11],"sum":124,"range":20},
+    {"issue":"26052","date":"2026/5/13","weekDay":"周六","reds":[2,3,20,28,33],"blues":[2,12],"sum":86,"range":31}
   ];
 }
 
@@ -756,8 +1109,51 @@ function formatDate(date) {
   return `${year}-${month}-${day}`;
 }
 
+function toggleCalcNumber(gameType, color, num) {
+  if (gameType === 'dlt') {
+    if (color === 'red') {
+      const index = calcDltRed.indexOf(num);
+      if (index > -1) {
+        calcDltRed.splice(index, 1);
+      } else {
+        calcDltRed.push(num);
+        calcDltRed.sort((a, b) => a - b);
+      }
+      document.getElementById(`calc-dlt-red-${num}`).classList.toggle('selected');
+      document.getElementById('dlt-calc-nums').textContent = calcDltRed.length > 0 ? calcDltRed.join(' ') : '-';
+    } else {
+      const index = calcDltBlue.indexOf(num);
+      if (index > -1) {
+        calcDltBlue.splice(index, 1);
+      } else {
+        calcDltBlue.push(num);
+        calcDltBlue.sort((a, b) => a - b);
+      }
+      document.getElementById(`calc-dlt-blue-${num}`).classList.toggle('selected');
+      document.getElementById('dlt-calc-blues').textContent = calcDltBlue.length > 0 ? calcDltBlue.join(' ') : '-';
+    }
+  }
+}
+
+function clearCalcNumbers(gameType) {
+  if (gameType === 'dlt') {
+    calcDltRed.forEach(num => {
+      document.getElementById(`calc-dlt-red-${num}`).classList.remove('selected');
+    });
+    calcDltBlue.forEach(num => {
+      document.getElementById(`calc-dlt-blue-${num}`).classList.remove('selected');
+    });
+    calcDltRed = [];
+    calcDltBlue = [];
+    document.getElementById('dlt-calc-nums').textContent = '-';
+    document.getElementById('dlt-calc-blues').textContent = '-';
+    document.getElementById('dlt-calc-result').textContent = '-';
+  }
+}
+
 function calculateDlt(op) {
-  if (dltRedSelected.length === 0) {
+  const nums = [...calcDltRed, ...calcDltBlue];
+  if (nums.length === 0) {
     document.getElementById('dlt-calc-result').textContent = '请先选择号码';
     return;
   }
@@ -765,32 +1161,52 @@ function calculateDlt(op) {
   let result;
   switch(op) {
     case 'sum':
-      result = dltRedSelected.reduce((a, b) => a + b, 0);
+      result = `和值: ${nums.reduce((a, b) => a + b, 0)}`;
       break;
     case 'avg':
-      result = (dltRedSelected.reduce((a, b) => a + b, 0) / dltRedSelected.length).toFixed(1);
+      result = `平均值: ${(nums.reduce((a, b) => a + b, 0) / nums.length).toFixed(2)}`;
       break;
     case 'max':
-      result = Math.max(...dltRedSelected);
+      result = `最大值: ${Math.max(...nums)}`;
       break;
     case 'min':
-      result = Math.min(...dltRedSelected);
+      result = `最小值: ${Math.min(...nums)}`;
       break;
     case 'range':
-      result = Math.max(...dltRedSelected) - Math.min(...dltRedSelected);
-      break;
-    case 'multiply':
-      result = dltRedSelected.reduce((a, b) => a * b, 1);
+      result = `跨度: ${Math.max(...nums) - Math.min(...nums)}`;
       break;
     case 'oddEven':
-      const dltOdd = dltRedSelected.filter(n => n % 2 === 1).length;
-      const dltEven = dltRedSelected.length - dltOdd;
-      result = `${dltOdd}:${dltEven}`;
+      const odd = nums.filter(n => n % 2 === 1).length;
+      const even = nums.length - odd;
+      result = `奇偶比: ${odd}:${even} (${((odd / nums.length) * 100).toFixed(1)}%奇数)`;
       break;
     case 'size':
-      const dltBig = dltRedSelected.filter(n => n > 18).length;
-      const dltSmall = dltRedSelected.length - dltBig;
-      result = `${dltBig}:${dltSmall}`;
+      const big = nums.filter(n => n > (nums.includes(35) ? 18 : 16)).length;
+      const small = nums.length - big;
+      result = `大小比: ${big}:${small} (${((big / nums.length) * 100).toFixed(1)}%大数)`;
+      break;
+    case 'zone':
+      const zone1 = nums.filter(n => n >= 1 && n <= 12).length;
+      const zone2 = nums.filter(n => n >= 13 && n <= 24).length;
+      const zone3 = nums.filter(n => n >= 25 && n <= 35).length;
+      result = `区间分布: 1-12=${zone1}个, 13-24=${zone2}个, 25-35=${zone3}个`;
+      break;
+    case 'repeat':
+      const history = dltHistoryData.length > 0 ? dltHistoryData : generateMockDltHistory();
+      const recentDraws = history.slice(0, 5);
+      let repeatCount = 0;
+      let repeatNums = [];
+      recentDraws.forEach(draw => {
+        nums.forEach(num => {
+          if (draw.reds.includes(num) || draw.blues.includes(num)) {
+            if (!repeatNums.includes(num)) {
+              repeatNums.push(num);
+              repeatCount++;
+            }
+          }
+        });
+      });
+      result = `近5期重号分析: 有${repeatCount}个号码重复出现 (${repeatNums.join(', ') || '无'})`;
       break;
   }
   document.getElementById('dlt-calc-result').textContent = result;
@@ -1207,40 +1623,129 @@ function searchPl5History() {
 }
 
 function renderDltTrendChart() {
-  const history = (dltHistoryData.length > 0 ? dltHistoryData : generateMockDltHistory()).slice(0, 50);
+  const history = (dltHistoryData.length > 0 ? dltHistoryData : generateMockDltHistory());
   const chart = document.getElementById('dlt-trend-chart');
   
   let html = `<table class="trend-table">
     <tr>
-      <th>期数</th>
-      <th colspan="5">开奖号码</th>
-      ${Array.from({length: 35}, (_, i) => `<th>${i + 1}</th>`).join('')}
+      <th>期号</th>
+      <th>开奖日期</th>
+      <th colspan="5">前区</th>
+      <th colspan="2">后区</th>
       <th>和值</th>
-      <th>单双</th>
-      <th>重连</th>
+      <th>跨度</th>
     </tr>`;
   
   history.forEach(h => {
-    const numArray = Array(35).fill('');
-    h.reds.forEach(r => {
-      numArray[r - 1] = '●';
-    });
-    
-    const oddCount = h.reds.filter(r => r % 2 === 1).length;
-    const evenCount = h.reds.length - oddCount;
-    
     html += `<tr>
-      <td class="issue-cell">${h.issue}</td>
-      ${h.reds.map(r => `<td class="num-cell">${r}</td>`).join('')}
-      ${numArray.map(n => `<td>${n}</td>`).join('')}
-      <td class="sum-cell">${h.sum}</td>
-      <td class="odd-cell">${oddCount}:${evenCount}</td>
-      <td class="repeat-cell">${checkRepeatAndLink(h.reds)}</td>
+      <td>${h.issue}</td>
+      <td>${h.date}</td>
+      <td class="red-ball">${h.reds[0]}</td>
+      <td class="red-ball">${h.reds[1]}</td>
+      <td class="red-ball">${h.reds[2]}</td>
+      <td class="red-ball">${h.reds[3]}</td>
+      <td class="red-ball">${h.reds[4]}</td>
+      <td class="blue-ball">${h.blues[0]}</td>
+      <td class="blue-ball">${h.blues[1]}</td>
+      <td>${h.sum}</td>
+      <td>${h.range}</td>
     </tr>`;
   });
   
   html += '</table>';
+  
+  const recommendations = generateRecommendations(history.slice(0, 30));
+  html += `<div class="recommendations">
+    <h3>🎯 智能推荐号码（共5注）</h3>
+    ${recommendations.map((rec, index) => `
+      <div class="recommendation-item">
+        <div class="recommendation-header">第${index + 1}注</div>
+        <div class="recommendation-numbers">
+          <span class="red-ball">${rec.reds[0]}</span>
+          <span class="red-ball">${rec.reds[1]}</span>
+          <span class="red-ball">${rec.reds[2]}</span>
+          <span class="red-ball">${rec.reds[3]}</span>
+          <span class="red-ball">${rec.reds[4]}</span>
+          <span class="blue-ball small">${rec.blues[0]}</span>
+          <span class="blue-ball small">${rec.blues[1]}</span>
+        </div>
+        <div class="recommendation-suggestion">${rec.suggestion}</div>
+      </div>
+    `).join('')}
+  </div>`;
+  
   chart.innerHTML = html;
+}
+
+function analyzeHotColdNumbers(history) {
+  const redCounts = {};
+  const blueCounts = {};
+  
+  for (let i = 1; i <= 35; i++) redCounts[i] = 0;
+  for (let i = 1; i <= 12; i++) blueCounts[i] = 0;
+  
+  history.forEach(h => {
+    h.reds.forEach(r => redCounts[r]++);
+    h.blues.forEach(b => blueCounts[b]++);
+  });
+  
+  const sortedReds = Object.entries(redCounts).map(([num, count]) => ({ num: parseInt(num), count })).sort((a, b) => b.count - a.count);
+  const sortedBlues = Object.entries(blueCounts).map(([num, count]) => ({ num: parseInt(num), count })).sort((a, b) => b.count - a.count);
+  
+  return {
+    hotReds: sortedReds.slice(0, 5),
+    coldReds: sortedReds.slice(-5),
+    hotBlues: sortedBlues.slice(0, 3),
+    coldBlues: sortedBlues.slice(-3)
+  };
+}
+
+function generateRecommendations(history) {
+  const hotCold = analyzeHotColdNumbers(history);
+  const hotReds = hotCold.hotReds.map(n => n.num);
+  const coldReds = hotCold.coldReds.map(n => n.num);
+  const hotBlues = hotCold.hotBlues.map(n => n.num);
+  const coldBlues = hotCold.coldBlues.map(n => n.num);
+  
+  const recommendations = [];
+  
+  recommendations.push({
+    reds: [...hotReds.slice(0, 5)].sort((a, b) => a - b),
+    blues: [...hotBlues.slice(0, 2)].sort((a, b) => a - b),
+    suggestion: '全热号组合：选取近期出现频率最高的号码，适合追热策略'
+  });
+  
+  recommendations.push({
+    reds: [...coldReds.slice(0, 5)].sort((a, b) => a - b),
+    blues: [...coldBlues.slice(0, 2)].sort((a, b) => a - b),
+    suggestion: '全冷号组合：选取近期出现频率最低的号码，适合追冷策略'
+  });
+  
+  recommendations.push({
+    reds: [hotReds[0], hotReds[1], coldReds[0], coldReds[1], hotReds[2]].sort((a, b) => a - b),
+    blues: [hotBlues[0], coldBlues[0]].sort((a, b) => a - b),
+    suggestion: '冷热搭配：3热2冷前区，1热1冷后区，平衡策略'
+  });
+  
+  recommendations.push({
+    reds: [hotReds[0], coldReds[0], hotReds[1], coldReds[1], hotReds[2]].sort((a, b) => a - b),
+    blues: [hotBlues[0], hotBlues[1]].sort((a, b) => a - b),
+    suggestion: '交叉组合：热冷交替排列，后区全热号'
+  });
+  
+  const randomReds = [];
+  const allReds = [...hotReds, ...coldReds];
+  while (randomReds.length < 5) {
+    const rand = allReds[Math.floor(Math.random() * allReds.length)];
+    if (!randomReds.includes(rand)) randomReds.push(rand);
+  }
+  recommendations.push({
+    reds: randomReds.sort((a, b) => a - b),
+    blues: [hotBlues[Math.floor(Math.random() * hotBlues.length)], coldBlues[Math.floor(Math.random() * coldBlues.length)]].sort((a, b) => a - b),
+    suggestion: '随机优化组合：基于冷热号池随机生成，兼顾概率分布'
+  });
+  
+  return recommendations;
 }
 
 function renderSsqTrendChart() {
@@ -1961,6 +2466,16 @@ function generateSmartNumbers(gameType, count, redCount, blueCount) {
   const maxRed = gameType === 'dlt' ? 35 : 33;
   const maxBlue = gameType === 'dlt' ? 12 : 16;
   const requiredRed = gameType === 'dlt' ? 5 : 6;
+  const targetRedCount = redCount || requiredRed;
+  
+  const suggestions = [
+    '均衡组合：热号与冷号合理搭配，兼顾追热与追冷策略',
+    '趋势追踪：重点选取近期表现活跃的号码',
+    '概率优化：基于近30期数据分析，提升号码覆盖度',
+    '冷热平衡：热号为主，辅以冷号增加惊喜机会',
+    '随机策略：在趋势数据基础上加入随机元素',
+    '稳健选号：优先选择中频号码，降低风险'
+  ];
   
   for (let t = 0; t < count; t++) {
     let reds = [];
@@ -1970,9 +2485,9 @@ function generateSmartNumbers(gameType, count, redCount, blueCount) {
     const coldRatio = 0.3;
     const randomRatio = 0.1;
     
-    const hotRedsCount = Math.round(requiredRed * hotRatio);
-    const coldRedsCount = Math.round(requiredRed * coldRatio);
-    const randomRedsCount = requiredRed - hotRedsCount - coldRedsCount;
+    const hotRedsCount = Math.round(targetRedCount * hotRatio);
+    const coldRedsCount = Math.round(targetRedCount * coldRatio);
+    const randomRedsCount = targetRedCount - hotRedsCount - coldRedsCount;
     
     const hotSelected = [];
     while (hotSelected.length < hotRedsCount) {
@@ -2012,11 +2527,14 @@ function generateSmartNumbers(gameType, count, redCount, blueCount) {
     
     blues.sort((a, b) => a - b);
     
+    const suggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
+    
     tickets.push({
-      reds: reds.slice(0, redCount || requiredRed),
+      reds: reds.slice(0, targetRedCount),
       blues: blues.slice(0, blueCount),
-      type: `${redCount || requiredRed}+${blueCount}`,
-      smart: true
+      type: `${targetRedCount}+${blueCount}`,
+      smart: true,
+      suggestion: suggestion
     });
   }
   
@@ -2134,6 +2652,7 @@ function displayGeneratedTickets(gameType, tickets) {
         <div class="ticket-summary">
           ${ticket.smart ? '✅ 智能选号 (基于近30期走势分析)' : '📝 手动选号'}
         </div>
+        ${ticket.suggestion ? `<div class="ticket-suggestion">💡 ${ticket.suggestion}</div>` : ''}
       </div>
     `;
   });

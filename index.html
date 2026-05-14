@@ -10,9 +10,9 @@
   <div id="login-screen" class="login-screen">
     <div class="login-container">
       <div class="login-logo">
-        <h1>✨</h1>
+        <div class="logo-icon">✨</div>
         <h2>梦想家</h2>
-        <p></p>
+        <p>智能彩票选号系统</p>
       </div>
       
       <div class="auth-form">
@@ -141,7 +141,6 @@
               </div>
               
               <div class="actions">
-                <button class="btn btn-primary" onclick="generateNumbers('dlt')">机选一注</button>
                 <button class="btn btn-secondary" onclick="saveTicket('dlt')">保存号码</button>
                 <button class="btn btn-clear" onclick="clearSelection('dlt')">清空选择</button>
               </div>
@@ -163,58 +162,63 @@
             <div class="panel">
               <h3>大乐透 - 走势分析</h3>
               <div class="trend-chart" id="dlt-trend-chart"></div>
-              <div class="hot-cold-panel">
-                <div class="hot-panel">
-                  <h4>🔥 热门号码</h4>
-                  <div id="dlt-hot-numbers"></div>
-                </div>
-                <div class="cold-panel">
-                  <h4>❄️ 冷门号码</h4>
-                  <div id="dlt-cold-numbers"></div>
-                </div>
-              </div>
             </div>
           </div>
 
           <div id="dlt-calculator" class="section-content">
             <div class="panel">
               <h3>大乐透 - 号码计算</h3>
-              <div class="calculator-input">
-                <div class="calc-all-numbers">
-                  <div class="all-red-numbers">
-                    <span>前区号码 (1-35):</span>
-                    <span id="dlt-all-reds"></span>
-                  </div>
-                  <div class="all-blue-numbers">
-                    <span>后区号码 (1-12):</span>
-                    <span id="dlt-all-blues"></span>
-                  </div>
-                </div>
-                <div class="calc-numbers">
+              <p style="color: #64748b; margin-bottom: 15px; font-size: 14px;">点击下方号码进行选择，支持任意数量号码的计算</p>
+              
+              <div class="number-grid">
+                <div class="grid-header">前区号码 (1-35)</div>
+                <div class="numbers-row" id="dlt-calc-red-numbers"></div>
+              </div>
+              
+              <div class="number-grid">
+                <div class="grid-header">后区号码 (1-12)</div>
+                <div class="numbers-row" id="dlt-calc-blue-numbers"></div>
+              </div>
+              
+              <div class="calc-summary">
+                <div class="summary-row">
                   <span>已选前区:</span>
-                  <span id="dlt-calc-nums">-</span>
+                  <span id="dlt-calc-nums" class="selected-nums">-</span>
                 </div>
-                <div class="calc-numbers">
+                <div class="summary-row">
                   <span>已选后区:</span>
-                  <span id="dlt-calc-blues">-</span>
-                </div>
-                <div class="calc-available">
-                  <span>可选操作:</span>
-                  <div class="calc-buttons">
-                    <button class="btn btn-sm" onclick="calculateDlt('sum')">求和</button>
-                    <button class="btn btn-sm" onclick="calculateDlt('avg')">平均</button>
-                    <button class="btn btn-sm" onclick="calculateDlt('max')">最大</button>
-                    <button class="btn btn-sm" onclick="calculateDlt('min')">最小</button>
-                    <button class="btn btn-sm" onclick="calculateDlt('range')">跨度</button>
-                    <button class="btn btn-sm" onclick="calculateDlt('oddEven')">奇偶比</button>
-                    <button class="btn btn-sm" onclick="calculateDlt('size')">大小比</button>
-                  </div>
-                </div>
-                <div class="calc-result">
-                  <strong>计算结果:</strong>
-                  <span id="dlt-calc-result">-</span>
+                  <span id="dlt-calc-blues" class="selected-nums">-</span>
                 </div>
               </div>
+              
+              <div class="calc-operations">
+                <div class="operation-section">
+                  <span class="section-label">基础运算:</span>
+                  <div class="operation-buttons">
+                    <button class="btn btn-sm btn-calc" onclick="calculateDlt('sum')">求和</button>
+                    <button class="btn btn-sm btn-calc" onclick="calculateDlt('avg')">平均</button>
+                    <button class="btn btn-sm btn-calc" onclick="calculateDlt('max')">最大</button>
+                    <button class="btn btn-sm btn-calc" onclick="calculateDlt('min')">最小</button>
+                    <button class="btn btn-sm btn-calc" onclick="calculateDlt('range')">跨度</button>
+                  </div>
+                </div>
+                <div class="operation-section">
+                  <span class="section-label">组合分析:</span>
+                  <div class="operation-buttons">
+                    <button class="btn btn-sm btn-calc" onclick="calculateDlt('oddEven')">奇偶比</button>
+                    <button class="btn btn-sm btn-calc" onclick="calculateDlt('size')">大小比</button>
+                    <button class="btn btn-sm btn-calc" onclick="calculateDlt('zone')">区间分布</button>
+                    <button class="btn btn-sm btn-calc" onclick="calculateDlt('repeat')">重号分析</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="calc-result">
+                <div class="result-header">📊 计算结果</div>
+                <div id="dlt-calc-result">-</div>
+              </div>
+              
+              <button class="btn btn-secondary" onclick="clearCalcNumbers('dlt')" style="width: 100%; margin-top: 15px;">清空选择</button>
             </div>
           </div>
         </div>
@@ -339,16 +343,6 @@
             <div class="panel">
               <h3>双色球 - 走势分析</h3>
               <div class="trend-chart" id="ssq-trend-chart"></div>
-              <div class="hot-cold-panel">
-                <div class="hot-panel">
-                  <h4>🔥 热门号码</h4>
-                  <div id="ssq-hot-numbers"></div>
-                </div>
-                <div class="cold-panel">
-                  <h4>❄️ 冷门号码</h4>
-                  <div id="ssq-cold-numbers"></div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -582,111 +576,67 @@
         <div id="data-entry" class="tab-content">
           <div class="panel">
             <h3>📝 开奖结果录入</h3>
-            <p style="color: #64748b; margin-bottom: 20px; font-size: 14px;">请输入最新的开奖结果，系统将自动更新历史记录和走势分析。</p>
+            <p style="color: #64748b; margin-bottom: 20px; font-size: 14px;">选择彩票类型，系统将自动计算期号和日期，输入开奖号码后自动更新历史记录和走势分析。</p>
             
-            <div class="section-tabs">
-              <button class="section-btn active" data-section="entry-dlt">大乐透</button>
-              <button class="section-btn" data-section="entry-ssq">双色球</button>
-              <button class="section-btn" data-section="entry-pl3">排列三</button>
-              <button class="section-btn" data-section="entry-pl5">排列五</button>
-            </div>
-
-            <div id="entry-dlt" class="section-content active">
-              <div style="max-width: 500px; margin: 0 auto;">
-                <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">期号 (例如: 2026015)</label>
-                  <input type="text" id="entry-dlt-issue" placeholder="请输入期号" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖日期</label>
-                  <input type="date" id="entry-dlt-date" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">前区号码 (5个, 用空格分隔)</label>
-                  <input type="text" id="entry-dlt-reds" placeholder="例如: 03 08 15 22 31" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">后区号码 (2个, 用空格分隔)</label>
-                  <input type="text" id="entry-dlt-blues" placeholder="例如: 02 09" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <button class="btn btn-primary" onclick="addDltResult()" style="width: 100%;">录入开奖结果</button>
-                <div id="entry-dlt-result" style="margin-top: 15px; text-align: center; color: #16a34a; font-weight: bold; display: none;"></div>
+            <div style="max-width: 500px; margin: 0 auto;">
+              <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">选择彩票类型</label>
+                <select id="entry-game-type" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: white;" onchange="onGameTypeChange()">
+                  <option value="dlt">大乐透</option>
+                  <option value="ssq">双色球</option>
+                  <option value="pl3">排列三</option>
+                  <option value="pl5">排列五</option>
+                </select>
               </div>
-            </div>
-
-            <div id="entry-ssq" class="section-content">
-              <div style="max-width: 500px; margin: 0 auto;">
-                <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">期号 (例如: 2026015)</label>
-                  <input type="text" id="entry-ssq-issue" placeholder="请输入期号" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖日期</label>
-                  <input type="date" id="entry-ssq-date" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">红球号码 (6个, 用空格分隔)</label>
-                  <input type="text" id="entry-ssq-reds" placeholder="例如: 03 08 15 22 31 33" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">蓝球号码</label>
-                  <input type="text" id="entry-ssq-blue" placeholder="例如: 09" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <button class="btn btn-primary" onclick="addSsqResult()" style="width: 100%;">录入开奖结果</button>
-                <div id="entry-ssq-result" style="margin-top: 15px; text-align: center; color: #16a34a; font-weight: bold; display: none;"></div>
+              
+              <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">期号 <span id="issue-hint" style="font-weight: normal; color: #64748b; font-size: 12px;">(自动计算)</span></label>
+                <input type="text" id="entry-issue" placeholder="期号将自动计算" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; background: #f8fafc; color: #64748b;">
               </div>
-            </div>
-
-            <div id="entry-pl3" class="section-content">
-              <div style="max-width: 500px; margin: 0 auto;">
-                <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">期号 (例如: 2026015)</label>
-                  <input type="text" id="entry-pl3-issue" placeholder="请输入期号" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖日期</label>
-                  <input type="date" id="entry-pl3-date" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖号码 (3个, 用空格分隔)</label>
-                  <input type="text" id="entry-pl3-nums" placeholder="例如: 5 8 3" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
-                <button class="btn btn-primary" onclick="addPl3Result()" style="width: 100%;">录入开奖结果</button>
-                <div id="entry-pl3-result" style="margin-top: 15px; text-align: center; color: #16a34a; font-weight: bold; display: none;"></div>
+              
+              <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">开奖日期 <span id="date-hint" style="font-weight: normal; color: #64748b; font-size: 12px;">(自动计算)</span></label>
+                <input type="date" id="entry-date" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
               </div>
-            </div>
-
-            <div id="entry-pl5" class="section-content">
-              <div style="max-width: 500px; margin: 0 auto;">
+              
+              <div id="entry-dlt-fields" style="display: block;">
                 <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">期号 (例如: 2026015)</label>
-                  <input type="text" id="entry-pl5-issue" placeholder="请输入期号" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">前区号码 (5个, 用空格分隔)</label>
+                  <input type="text" id="entry-reds" placeholder="例如: 03 08 15 22 31" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
                 </div>
-                
-                <div style="margin-bottom: 15px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖日期</label>
-                  <input type="date" id="entry-pl5-date" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
-                </div>
-                
                 <div style="margin-bottom: 20px;">
-                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖号码 (5个, 用空格分隔)</label>
-                  <input type="text" id="entry-pl5-nums" placeholder="例如: 5 8 3 2 9" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">后区号码 (2个, 用空格分隔)</label>
+                  <input type="text" id="entry-blues" placeholder="例如: 02 09" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
                 </div>
-                
-                <button class="btn btn-primary" onclick="addPl5Result()" style="width: 100%;">录入开奖结果</button>
-                <div id="entry-pl5-result" style="margin-top: 15px; text-align: center; color: #16a34a; font-weight: bold; display: none;"></div>
               </div>
+              
+              <div id="entry-ssq-fields" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">红球号码 (6个, 用空格分隔)</label>
+                  <input type="text" id="entry-reds" placeholder="例如: 03 08 15 22 31 33" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">蓝球号码</label>
+                  <input type="text" id="entry-blues" placeholder="例如: 09" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+              </div>
+              
+              <div id="entry-pl3-fields" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">开奖号码 (3个, 用空格分隔)</label>
+                  <input type="text" id="entry-nums" placeholder="例如: 5 8 3" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+              </div>
+              
+              <div id="entry-pl5-fields" style="display: none;">
+                <div style="margin-bottom: 20px;">
+                  <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">开奖号码 (5个, 用空格分隔)</label>
+                  <input type="text" id="entry-nums" placeholder="例如: 5 8 3 2 9" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+              </div>
+              
+              <button class="btn btn-primary" onclick="addDrawResult()" style="width: 100%;">录入开奖结果</button>
+              <div id="entry-result" style="margin-top: 15px; text-align: center; font-weight: bold; display: none;"></div>
             </div>
           </div>
         </div>

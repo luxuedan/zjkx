@@ -482,12 +482,13 @@ function loadDltHistory() {
   const table = document.getElementById('dlt-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>开奖日期</th><th colspan="5">开奖结果</th></tr>
-      <tr><th></th><th></th><th colspan="3">前区</th><th colspan="2">后区</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th>星期</th><th colspan="5">开奖结果</th></tr>
+      <tr><th></th><th></th><th></th><th colspan="3">前区</th><th colspan="2">后区</th></tr>
       ${history.map(h => `
         <tr>
           <td>${h.issue}</td>
           <td>${h.date}</td>
+          <td>${h.weekDay}</td>
           <td class="red-ball">${h.reds[0]}</td>
           <td class="red-ball">${h.reds[1]}</td>
           <td class="red-ball">${h.reds[2]}</td>
@@ -504,12 +505,13 @@ function loadSsqHistory() {
   const table = document.getElementById('ssq-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>开奖日期</th><th colspan="7">开奖结果</th></tr>
-      <tr><th></th><th></th><th colspan="6">红球</th><th>蓝球</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th>星期</th><th colspan="7">开奖结果</th></tr>
+      <tr><th></th><th></th><th></th><th colspan="6">红球</th><th>蓝球</th></tr>
       ${history.map(h => `
         <tr>
           <td>${h.issue}</td>
           <td>${h.date}</td>
+          <td>${h.weekDay}</td>
           <td class="red-ball">${h.reds[0]}</td>
           <td class="red-ball">${h.reds[1]}</td>
           <td class="red-ball">${h.reds[2]}</td>
@@ -528,12 +530,13 @@ function loadPl3History() {
   const table = document.getElementById('pl3-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>开奖日期</th><th colspan="3">开奖结果</th></tr>
-      <tr><th></th><th></th><th>百位</th><th>十位</th><th>个位</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th>星期</th><th colspan="3">开奖结果</th></tr>
+      <tr><th></th><th></th><th></th><th>百位</th><th>十位</th><th>个位</th></tr>
       ${history.map(h => `
         <tr>
           <td>${h.issue}</td>
           <td>${h.date}</td>
+          <td>${h.weekDay}</td>
           <td>${h.nums[0]}</td>
           <td>${h.nums[1]}</td>
           <td>${h.nums[2]}</td>
@@ -548,12 +551,13 @@ function loadPl5History() {
   const table = document.getElementById('pl5-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>开奖日期</th><th colspan="5">开奖结果</th></tr>
-      <tr><th></th><th></th><th>万位</th><th>千位</th><th>百位</th><th>十位</th><th>个位</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th>星期</th><th colspan="5">开奖结果</th></tr>
+      <tr><th></th><th></th><th></th><th>万位</th><th>千位</th><th>百位</th><th>十位</th><th>个位</th></tr>
       ${history.map(h => `
         <tr>
           <td>${h.issue}</td>
           <td>${h.date}</td>
+          <td>${h.weekDay}</td>
           <td>${h.nums[0]}</td>
           <td>${h.nums[1]}</td>
           <td>${h.nums[2]}</td>
@@ -565,14 +569,27 @@ function loadPl5History() {
   `;
 }
 
+function getDayOfWeek(date) {
+  const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  return days[date.getDay()];
+}
+
 function generateMockDltHistory() {
   const history = [];
   const baseDate = new Date('2026-05-13');
-  for (let i = 0; i < 150; i++) {
-    const daysToSubtract = (149 - i) * 2 + ((149 - i) % 3 === 0 ? 1 : 0);
-    const date = new Date(baseDate);
-    date.setDate(date.getDate() - daysToSubtract);
+  let issueNum = 150;
+  
+  for (let i = 0; i < 30; i++) {
+    let date = new Date(baseDate);
+    date.setDate(date.getDate() - i);
+    const dayOfWeek = date.getDay();
+    
+    if (dayOfWeek !== 1 && dayOfWeek !== 3 && dayOfWeek !== 6) {
+      continue;
+    }
+    
     const dateStr = formatDate(date);
+    const weekDay = getDayOfWeek(date);
     
     const reds = [];
     while (reds.length < 5) {
@@ -587,25 +604,35 @@ function generateMockDltHistory() {
     }
     blues.sort((a, b) => a - b);
     history.push({
-      issue: `2026${(i + 1).toString().padStart(3, '0')}`,
+      issue: `2026${issueNum.toString().padStart(3, '0')}`,
       date: dateStr,
+      weekDay: weekDay,
       reds,
       blues,
       sum: reds.reduce((a, b) => a + b, 0),
       range: Math.max(...reds) - Math.min(...reds)
     });
+    issueNum--;
   }
-  return history;
+  return history.reverse();
 }
 
 function generateMockSsqHistory() {
   const history = [];
   const baseDate = new Date('2026-05-13');
-  for (let i = 0; i < 150; i++) {
-    const daysToSubtract = (149 - i) * 2;
-    const date = new Date(baseDate);
-    date.setDate(date.getDate() - daysToSubtract);
+  let issueNum = 150;
+  
+  for (let i = 0; i < 30; i++) {
+    let date = new Date(baseDate);
+    date.setDate(date.getDate() - i);
+    const dayOfWeek = date.getDay();
+    
+    if (dayOfWeek !== 2 && dayOfWeek !== 4 && dayOfWeek !== 0) {
+      continue;
+    }
+    
     const dateStr = formatDate(date);
+    const weekDay = getDayOfWeek(date);
     
     const reds = [];
     while (reds.length < 6) {
@@ -615,24 +642,28 @@ function generateMockSsqHistory() {
     reds.sort((a, b) => a - b);
     const blue = Math.floor(Math.random() * 16) + 1;
     history.push({
-      issue: `2026${(i + 1).toString().padStart(3, '0')}`,
+      issue: `2026${issueNum.toString().padStart(3, '0')}`,
       date: dateStr,
+      weekDay: weekDay,
       reds,
       blue,
       sum: reds.reduce((a, b) => a + b, 0),
       range: Math.max(...reds) - Math.min(...reds)
     });
+    issueNum--;
   }
-  return history;
+  return history.reverse();
 }
 
 function generateMockPl3History() {
   const history = [];
   const baseDate = new Date('2026-05-13');
-  for (let i = 0; i < 300; i++) {
+  
+  for (let i = 0; i < 30; i++) {
     const date = new Date(baseDate);
     date.setDate(date.getDate() - i);
     const dateStr = formatDate(date);
+    const weekDay = getDayOfWeek(date);
     
     const nums = [
       Math.floor(Math.random() * 10),
@@ -640,8 +671,9 @@ function generateMockPl3History() {
       Math.floor(Math.random() * 10)
     ];
     history.push({
-      issue: `2026${(300 - i).toString().padStart(3, '0')}`,
+      issue: `2026${(30 - i).toString().padStart(3, '0')}`,
       date: dateStr,
+      weekDay: weekDay,
       nums,
       sum: nums.reduce((a, b) => a + b, 0)
     });
@@ -652,10 +684,12 @@ function generateMockPl3History() {
 function generateMockPl5History() {
   const history = [];
   const baseDate = new Date('2026-05-13');
-  for (let i = 0; i < 300; i++) {
+  
+  for (let i = 0; i < 30; i++) {
     const date = new Date(baseDate);
     date.setDate(date.getDate() - i);
     const dateStr = formatDate(date);
+    const weekDay = getDayOfWeek(date);
     
     const nums = [
       Math.floor(Math.random() * 10),
@@ -665,8 +699,9 @@ function generateMockPl5History() {
       Math.floor(Math.random() * 10)
     ];
     history.push({
-      issue: `2026${(300 - i).toString().padStart(3, '0')}`,
+      issue: `2026${(30 - i).toString().padStart(3, '0')}`,
       date: dateStr,
+      weekDay: weekDay,
       nums,
       sum: nums.reduce((a, b) => a + b, 0)
     });
@@ -1026,12 +1061,13 @@ function searchDltHistory() {
   const table = document.getElementById('dlt-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>开奖日期</th><th colspan="5">开奖结果</th></tr>
-      <tr><th></th><th></th><th colspan="3">前区</th><th colspan="2">后区</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th>星期</th><th colspan="5">开奖结果</th></tr>
+      <tr><th></th><th></th><th></th><th colspan="3">前区</th><th colspan="2">后区</th></tr>
       ${filtered.map(h => `
         <tr>
           <td>${h.issue}</td>
           <td>${h.date}</td>
+          <td>${h.weekDay}</td>
           <td class="red-ball">${h.reds[0]}</td>
           <td class="red-ball">${h.reds[1]}</td>
           <td class="red-ball">${h.reds[2]}</td>
@@ -1054,12 +1090,13 @@ function searchSsqHistory() {
   const table = document.getElementById('ssq-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>开奖日期</th><th colspan="7">开奖结果</th></tr>
-      <tr><th></th><th></th><th colspan="6">红球</th><th>蓝球</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th>星期</th><th colspan="7">开奖结果</th></tr>
+      <tr><th></th><th></th><th></th><th colspan="6">红球</th><th>蓝球</th></tr>
       ${filtered.map(h => `
         <tr>
           <td>${h.issue}</td>
           <td>${h.date}</td>
+          <td>${h.weekDay}</td>
           <td class="red-ball">${h.reds[0]}</td>
           <td class="red-ball">${h.reds[1]}</td>
           <td class="red-ball">${h.reds[2]}</td>
@@ -1084,12 +1121,13 @@ function searchPl3History() {
   const table = document.getElementById('pl3-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>开奖日期</th><th colspan="3">开奖结果</th></tr>
-      <tr><th></th><th></th><th>百位</th><th>十位</th><th>个位</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th>星期</th><th colspan="3">开奖结果</th></tr>
+      <tr><th></th><th></th><th></th><th>百位</th><th>十位</th><th>个位</th></tr>
       ${filtered.map(h => `
         <tr>
           <td>${h.issue}</td>
           <td>${h.date}</td>
+          <td>${h.weekDay}</td>
           <td>${h.nums[0]}</td>
           <td>${h.nums[1]}</td>
           <td>${h.nums[2]}</td>
@@ -1110,12 +1148,13 @@ function searchPl5History() {
   const table = document.getElementById('pl5-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>开奖日期</th><th colspan="5">开奖结果</th></tr>
-      <tr><th></th><th></th><th>万位</th><th>千位</th><th>百位</th><th>十位</th><th>个位</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th>星期</th><th colspan="5">开奖结果</th></tr>
+      <tr><th></th><th></th><th></th><th>万位</th><th>千位</th><th>百位</th><th>十位</th><th>个位</th></tr>
       ${filtered.map(h => `
         <tr>
           <td>${h.issue}</td>
           <td>${h.date}</td>
+          <td>${h.weekDay}</td>
           <td>${h.nums[0]}</td>
           <td>${h.nums[1]}</td>
           <td>${h.nums[2]}</td>

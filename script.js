@@ -51,6 +51,7 @@ function init() {
   checkLoginStatus();
   initGrids();
   loadHistoryData();
+  initTrendCharts();
   updateSidePanels('dlt');
 }
 
@@ -108,6 +109,14 @@ function initGrids() {
   initSsqGrids();
   initPl3Grids();
   initPl5Grids();
+  initAllNumbersDisplay();
+}
+
+function initAllNumbersDisplay() {
+  document.getElementById('dlt-all-reds').textContent = Array.from({length: 35}, (_, i) => i + 1).join(' ');
+  document.getElementById('dlt-all-blues').textContent = Array.from({length: 12}, (_, i) => i + 1).join(' ');
+  document.getElementById('ssq-all-reds').textContent = Array.from({length: 33}, (_, i) => i + 1).join(' ');
+  document.getElementById('ssq-all-blues').textContent = Array.from({length: 16}, (_, i) => i + 1).join(' ');
 }
 
 function initDltGrids() {
@@ -225,6 +234,7 @@ function updateDltBlueDisplay() {
     btn.classList.toggle('selected', dltBlueSelected.includes(num));
   });
   document.getElementById('dlt-blue-selected').textContent = dltBlueSelected.join(' ');
+  document.getElementById('dlt-calc-blues').textContent = dltBlueSelected.join(' ');
 }
 
 function toggleSsqRed(num) {
@@ -263,6 +273,7 @@ function updateSsqBlueDisplay() {
     btn.classList.toggle('selected', ssqBlueSelected.includes(num));
   });
   document.getElementById('ssq-blue-selected').textContent = ssqBlueSelected.join(' ');
+  document.getElementById('ssq-calc-blues').textContent = ssqBlueSelected.join(' ');
 }
 
 function selectPl3Position(pos, num) {
@@ -471,14 +482,17 @@ function loadDltHistory() {
   const table = document.getElementById('dlt-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>前区</th><th>后区</th><th>和值</th><th>跨度</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th colspan="5">开奖结果</th></tr>
+      <tr><th></th><th></th><th colspan="3">前区</th><th colspan="2">后区</th></tr>
       ${history.map(h => `
         <tr>
           <td>${h.issue}</td>
-          <td>${h.reds.join(' ')}</td>
-          <td>${h.blues.join(' ')}</td>
-          <td>${h.sum}</td>
-          <td>${h.range}</td>
+          <td>${h.date}</td>
+          <td class="red-ball">${h.reds[0]}</td>
+          <td class="red-ball">${h.reds[1]}</td>
+          <td class="red-ball">${h.reds[2]}</td>
+          <td class="blue-ball">${h.blues[0]}</td>
+          <td class="blue-ball">${h.blues[1]}</td>
         </tr>
       `).join('')}
     </table>
@@ -490,14 +504,19 @@ function loadSsqHistory() {
   const table = document.getElementById('ssq-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>红球</th><th>蓝球</th><th>和值</th><th>跨度</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th colspan="7">开奖结果</th></tr>
+      <tr><th></th><th></th><th colspan="6">红球</th><th>蓝球</th></tr>
       ${history.map(h => `
         <tr>
           <td>${h.issue}</td>
-          <td>${h.reds.join(' ')}</td>
-          <td>${h.blue}</td>
-          <td>${h.sum}</td>
-          <td>${h.range}</td>
+          <td>${h.date}</td>
+          <td class="red-ball">${h.reds[0]}</td>
+          <td class="red-ball">${h.reds[1]}</td>
+          <td class="red-ball">${h.reds[2]}</td>
+          <td class="red-ball">${h.reds[3]}</td>
+          <td class="red-ball">${h.reds[4]}</td>
+          <td class="red-ball">${h.reds[5]}</td>
+          <td class="blue-ball">${h.blue}</td>
         </tr>
       `).join('')}
     </table>
@@ -509,14 +528,15 @@ function loadPl3History() {
   const table = document.getElementById('pl3-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>百位</th><th>十位</th><th>个位</th><th>和值</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th colspan="3">开奖结果</th></tr>
+      <tr><th></th><th></th><th>百位</th><th>十位</th><th>个位</th></tr>
       ${history.map(h => `
         <tr>
           <td>${h.issue}</td>
+          <td>${h.date}</td>
           <td>${h.nums[0]}</td>
           <td>${h.nums[1]}</td>
           <td>${h.nums[2]}</td>
-          <td>${h.sum}</td>
         </tr>
       `).join('')}
     </table>
@@ -528,16 +548,17 @@ function loadPl5History() {
   const table = document.getElementById('pl5-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>万位</th><th>千位</th><th>百位</th><th>十位</th><th>个位</th><th>和值</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th colspan="5">开奖结果</th></tr>
+      <tr><th></th><th></th><th>万位</th><th>千位</th><th>百位</th><th>十位</th><th>个位</th></tr>
       ${history.map(h => `
         <tr>
           <td>${h.issue}</td>
+          <td>${h.date}</td>
           <td>${h.nums[0]}</td>
           <td>${h.nums[1]}</td>
           <td>${h.nums[2]}</td>
           <td>${h.nums[3]}</td>
           <td>${h.nums[4]}</td>
-          <td>${h.sum}</td>
         </tr>
       `).join('')}
     </table>
@@ -546,7 +567,13 @@ function loadPl5History() {
 
 function generateMockDltHistory() {
   const history = [];
-  for (let i = 150; i >= 1; i--) {
+  const baseDate = new Date('2026-05-13');
+  for (let i = 0; i < 150; i++) {
+    const daysToSubtract = i * 2 + (i % 3 === 0 ? 1 : 0);
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() - daysToSubtract);
+    const dateStr = formatDate(date);
+    
     const reds = [];
     while (reds.length < 5) {
       const num = Math.floor(Math.random() * 35) + 1;
@@ -560,7 +587,8 @@ function generateMockDltHistory() {
     }
     blues.sort((a, b) => a - b);
     history.push({
-      issue: `2026${i.toString().padStart(3, '0')}`,
+      issue: `2026${(150 - i).toString().padStart(3, '0')}`,
+      date: dateStr,
       reds,
       blues,
       sum: reds.reduce((a, b) => a + b, 0),
@@ -572,7 +600,13 @@ function generateMockDltHistory() {
 
 function generateMockSsqHistory() {
   const history = [];
-  for (let i = 150; i >= 1; i--) {
+  const baseDate = new Date('2026-05-13');
+  for (let i = 0; i < 150; i++) {
+    const daysToSubtract = i * 2;
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() - daysToSubtract);
+    const dateStr = formatDate(date);
+    
     const reds = [];
     while (reds.length < 6) {
       const num = Math.floor(Math.random() * 33) + 1;
@@ -581,7 +615,8 @@ function generateMockSsqHistory() {
     reds.sort((a, b) => a - b);
     const blue = Math.floor(Math.random() * 16) + 1;
     history.push({
-      issue: `2026${i.toString().padStart(3, '0')}`,
+      issue: `2026${(150 - i).toString().padStart(3, '0')}`,
+      date: dateStr,
       reds,
       blue,
       sum: reds.reduce((a, b) => a + b, 0),
@@ -593,14 +628,20 @@ function generateMockSsqHistory() {
 
 function generateMockPl3History() {
   const history = [];
-  for (let i = 300; i >= 1; i--) {
+  const baseDate = new Date('2026-05-13');
+  for (let i = 0; i < 300; i++) {
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() - i);
+    const dateStr = formatDate(date);
+    
     const nums = [
       Math.floor(Math.random() * 10),
       Math.floor(Math.random() * 10),
       Math.floor(Math.random() * 10)
     ];
     history.push({
-      issue: `2026${i.toString().padStart(3, '0')}`,
+      issue: `2026${(300 - i).toString().padStart(3, '0')}`,
+      date: dateStr,
       nums,
       sum: nums.reduce((a, b) => a + b, 0)
     });
@@ -610,7 +651,12 @@ function generateMockPl3History() {
 
 function generateMockPl5History() {
   const history = [];
-  for (let i = 300; i >= 1; i--) {
+  const baseDate = new Date('2026-05-13');
+  for (let i = 0; i < 300; i++) {
+    const date = new Date(baseDate);
+    date.setDate(date.getDate() - i);
+    const dateStr = formatDate(date);
+    
     const nums = [
       Math.floor(Math.random() * 10),
       Math.floor(Math.random() * 10),
@@ -619,12 +665,20 @@ function generateMockPl5History() {
       Math.floor(Math.random() * 10)
     ];
     history.push({
-      issue: `2026${i.toString().padStart(3, '0')}`,
+      issue: `2026${(300 - i).toString().padStart(3, '0')}`,
+      date: dateStr,
       nums,
       sum: nums.reduce((a, b) => a + b, 0)
     });
   }
   return history;
+}
+
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function calculateDlt(op) {
@@ -972,14 +1026,17 @@ function searchDltHistory() {
   const table = document.getElementById('dlt-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>前区</th><th>后区</th><th>和值</th><th>跨度</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th colspan="5">开奖结果</th></tr>
+      <tr><th></th><th></th><th colspan="3">前区</th><th colspan="2">后区</th></tr>
       ${filtered.map(h => `
         <tr>
           <td>${h.issue}</td>
-          <td>${h.reds.join(' ')}</td>
-          <td>${h.blues.join(' ')}</td>
-          <td>${h.sum}</td>
-          <td>${h.range}</td>
+          <td>${h.date}</td>
+          <td class="red-ball">${h.reds[0]}</td>
+          <td class="red-ball">${h.reds[1]}</td>
+          <td class="red-ball">${h.reds[2]}</td>
+          <td class="blue-ball">${h.blues[0]}</td>
+          <td class="blue-ball">${h.blues[1]}</td>
         </tr>
       `).join('')}
     </table>
@@ -997,14 +1054,19 @@ function searchSsqHistory() {
   const table = document.getElementById('ssq-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>红球</th><th>蓝球</th><th>和值</th><th>跨度</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th colspan="7">开奖结果</th></tr>
+      <tr><th></th><th></th><th colspan="6">红球</th><th>蓝球</th></tr>
       ${filtered.map(h => `
         <tr>
           <td>${h.issue}</td>
-          <td>${h.reds.join(' ')}</td>
-          <td>${h.blue}</td>
-          <td>${h.sum}</td>
-          <td>${h.range}</td>
+          <td>${h.date}</td>
+          <td class="red-ball">${h.reds[0]}</td>
+          <td class="red-ball">${h.reds[1]}</td>
+          <td class="red-ball">${h.reds[2]}</td>
+          <td class="red-ball">${h.reds[3]}</td>
+          <td class="red-ball">${h.reds[4]}</td>
+          <td class="red-ball">${h.reds[5]}</td>
+          <td class="blue-ball">${h.blue}</td>
         </tr>
       `).join('')}
     </table>
@@ -1022,14 +1084,15 @@ function searchPl3History() {
   const table = document.getElementById('pl3-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>百位</th><th>十位</th><th>个位</th><th>和值</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th colspan="3">开奖结果</th></tr>
+      <tr><th></th><th></th><th>百位</th><th>十位</th><th>个位</th></tr>
       ${filtered.map(h => `
         <tr>
           <td>${h.issue}</td>
+          <td>${h.date}</td>
           <td>${h.nums[0]}</td>
           <td>${h.nums[1]}</td>
           <td>${h.nums[2]}</td>
-          <td>${h.sum}</td>
         </tr>
       `).join('')}
     </table>
@@ -1047,20 +1110,194 @@ function searchPl5History() {
   const table = document.getElementById('pl5-history-list');
   table.innerHTML = `
     <table>
-      <tr><th>期号</th><th>万位</th><th>千位</th><th>百位</th><th>十位</th><th>个位</th><th>和值</th></tr>
+      <tr><th>期号</th><th>开奖日期</th><th colspan="5">开奖结果</th></tr>
+      <tr><th></th><th></th><th>万位</th><th>千位</th><th>百位</th><th>十位</th><th>个位</th></tr>
       ${filtered.map(h => `
         <tr>
           <td>${h.issue}</td>
+          <td>${h.date}</td>
           <td>${h.nums[0]}</td>
           <td>${h.nums[1]}</td>
           <td>${h.nums[2]}</td>
           <td>${h.nums[3]}</td>
           <td>${h.nums[4]}</td>
-          <td>${h.sum}</td>
         </tr>
       `).join('')}
     </table>
   `;
+}
+
+function renderDltTrendChart() {
+  const history = generateMockDltHistory().slice(0, 50);
+  const chart = document.getElementById('dlt-trend-chart');
+  
+  let html = `<table class="trend-table">
+    <tr>
+      <th>期数</th>
+      <th colspan="5">开奖号码</th>
+      ${Array.from({length: 35}, (_, i) => `<th>${i + 1}</th>`).join('')}
+      <th>和值</th>
+      <th>单双</th>
+      <th>重连</th>
+    </tr>`;
+  
+  history.forEach(h => {
+    const numArray = Array(35).fill('');
+    h.reds.forEach(r => {
+      numArray[r - 1] = '●';
+    });
+    
+    const oddCount = h.reds.filter(r => r % 2 === 1).length;
+    const evenCount = h.reds.length - oddCount;
+    
+    html += `<tr>
+      <td class="issue-cell">${h.issue}</td>
+      ${h.reds.map(r => `<td class="num-cell">${r}</td>`).join('')}
+      ${numArray.map(n => `<td>${n}</td>`).join('')}
+      <td class="sum-cell">${h.sum}</td>
+      <td class="odd-cell">${oddCount}:${evenCount}</td>
+      <td class="repeat-cell">${checkRepeatAndLink(h.reds)}</td>
+    </tr>`;
+  });
+  
+  html += '</table>';
+  chart.innerHTML = html;
+}
+
+function renderSsqTrendChart() {
+  const history = generateMockSsqHistory().slice(0, 50);
+  const chart = document.getElementById('ssq-trend-chart');
+  
+  let html = `<table class="trend-table">
+    <tr>
+      <th>期数</th>
+      <th colspan="6">红球</th>
+      <th>蓝球</th>
+      ${Array.from({length: 33}, (_, i) => `<th>${i + 1}</th>`).join('')}
+      <th>和值</th>
+      <th>单双</th>
+      <th>重连</th>
+    </tr>`;
+  
+  history.forEach(h => {
+    const numArray = Array(33).fill('');
+    h.reds.forEach(r => {
+      numArray[r - 1] = '●';
+    });
+    
+    const oddCount = h.reds.filter(r => r % 2 === 1).length;
+    const evenCount = h.reds.length - oddCount;
+    
+    html += `<tr>
+      <td class="issue-cell">${h.issue}</td>
+      ${h.reds.map(r => `<td class="num-cell">${r}</td>`).join('')}
+      <td class="blue-cell">${h.blue}</td>
+      ${numArray.map(n => `<td>${n}</td>`).join('')}
+      <td class="sum-cell">${h.sum}</td>
+      <td class="odd-cell">${oddCount}:${evenCount}</td>
+      <td class="repeat-cell">${checkRepeatAndLink(h.reds)}</td>
+    </tr>`;
+  });
+  
+  html += '</table>';
+  chart.innerHTML = html;
+}
+
+function renderPl3TrendChart() {
+  const history = generateMockPl3History().slice(0, 50);
+  const chart = document.getElementById('pl3-trend-chart');
+  
+  let html = `<table class="trend-table">
+    <tr>
+      <th>期数</th>
+      <th>百位</th>
+      <th>十位</th>
+      <th>个位</th>
+      ${Array.from({length: 10}, (_, i) => `<th>${i}</th>`).join('')}
+      <th>和值</th>
+    </tr>`;
+  
+  history.forEach(h => {
+    const numArray = Array(10).fill(0);
+    h.nums.forEach(n => {
+      numArray[n]++;
+    });
+    
+    html += `<tr>
+      <td class="issue-cell">${h.issue}</td>
+      <td>${h.nums[0]}</td>
+      <td>${h.nums[1]}</td>
+      <td>${h.nums[2]}</td>
+      ${numArray.map(n => `<td>${n || ''}</td>`).join('')}
+      <td class="sum-cell">${h.sum}</td>
+    </tr>`;
+  });
+  
+  html += '</table>';
+  chart.innerHTML = html;
+}
+
+function renderPl5TrendChart() {
+  const history = generateMockPl5History().slice(0, 50);
+  const chart = document.getElementById('pl5-trend-chart');
+  
+  let html = `<table class="trend-table">
+    <tr>
+      <th>期数</th>
+      <th>万位</th>
+      <th>千位</th>
+      <th>百位</th>
+      <th>十位</th>
+      <th>个位</th>
+      ${Array.from({length: 10}, (_, i) => `<th>${i}</th>`).join('')}
+      <th>和值</th>
+    </tr>`;
+  
+  history.forEach(h => {
+    const numArray = Array(10).fill(0);
+    h.nums.forEach(n => {
+      numArray[n]++;
+    });
+    
+    html += `<tr>
+      <td class="issue-cell">${h.issue}</td>
+      <td>${h.nums[0]}</td>
+      <td>${h.nums[1]}</td>
+      <td>${h.nums[2]}</td>
+      <td>${h.nums[3]}</td>
+      <td>${h.nums[4]}</td>
+      ${numArray.map(n => `<td>${n || ''}</td>`).join('')}
+      <td class="sum-cell">${h.sum}</td>
+    </tr>`;
+  });
+  
+  html += '</table>';
+  chart.innerHTML = html;
+}
+
+function checkRepeatAndLink(nums) {
+  let repeat = 0;
+  let link = 0;
+  
+  for (let i = 0; i < nums.length - 1; i++) {
+    if (nums[i + 1] === nums[i] + 1) {
+      link++;
+    }
+  }
+  
+  const unique = new Set(nums).size;
+  if (unique < nums.length) {
+    repeat = nums.length - unique;
+  }
+  
+  return `${repeat} ${link}`;
+}
+
+function initTrendCharts() {
+  renderDltTrendChart();
+  renderSsqTrendChart();
+  renderPl3TrendChart();
+  renderPl5TrendChart();
 }
 
 document.addEventListener('DOMContentLoaded', init);

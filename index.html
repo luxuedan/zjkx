@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>梦想家 - 彩票分析系统</title>
+  <title>梦想家</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -28,19 +28,11 @@
     </div>
   </div>
 
-  <div id="main-content" class="container" style="display: none;">
+  <div id="main-content" class="container tech-theme" style="display: none;">
     <header class="main-header">
-      <div class="header-left">
+      <div class="header-center">
         <h1>✨ 梦想家</h1>
-        <p></p>
       </div>
-      
-      <nav class="top-nav">
-        <button class="nav-btn active" data-tab="dlt">大乐透</button>
-        <button class="nav-btn" data-tab="ssq">双色球</button>
-        <button class="nav-btn" data-tab="pl3">排列三</button>
-        <button class="nav-btn" data-tab="pl5">排列五</button>
-      </nav>
 
       <div class="header-right">
         <span class="user-info" id="user-info">欢迎, root</span>
@@ -49,6 +41,15 @@
     </header>
 
     <div class="main-layout">
+      <aside class="left-sidebar">
+        <nav class="side-nav">
+          <button class="nav-btn active" data-tab="dlt">🎲 大乐透</button>
+          <button class="nav-btn" data-tab="ssq">🔵 双色球</button>
+          <button class="nav-btn" data-tab="pl3">🔢 排列三</button>
+          <button class="nav-btn" data-tab="pl5">🔢 排列五</button>
+        </nav>
+      </aside>
+      
       <main class="main-content">
         <div id="dlt" class="tab-content active">
           <div class="section-tabs">
@@ -133,9 +134,23 @@
             <div class="panel">
               <h3>大乐透 - 号码计算</h3>
               <div class="calculator-input">
+                <div class="calc-all-numbers">
+                  <div class="all-red-numbers">
+                    <span>前区号码 (1-35):</span>
+                    <span id="dlt-all-reds"></span>
+                  </div>
+                  <div class="all-blue-numbers">
+                    <span>后区号码 (1-12):</span>
+                    <span id="dlt-all-blues"></span>
+                  </div>
+                </div>
                 <div class="calc-numbers">
-                  <span>当前选择:</span>
+                  <span>已选前区:</span>
                   <span id="dlt-calc-nums">-</span>
+                </div>
+                <div class="calc-numbers">
+                  <span>已选后区:</span>
+                  <span id="dlt-calc-blues">-</span>
                 </div>
                 <div class="calc-available">
                   <span>可选操作:</span>
@@ -145,7 +160,6 @@
                     <button class="btn btn-sm" onclick="calculateDlt('max')">最大</button>
                     <button class="btn btn-sm" onclick="calculateDlt('min')">最小</button>
                     <button class="btn btn-sm" onclick="calculateDlt('range')">跨度</button>
-                    <button class="btn btn-sm" onclick="calculateDlt('multiply')">乘积</button>
                     <button class="btn btn-sm" onclick="calculateDlt('oddEven')">奇偶比</button>
                     <button class="btn btn-sm" onclick="calculateDlt('size')">大小比</button>
                   </div>
@@ -242,9 +256,23 @@
             <div class="panel">
               <h3>双色球 - 号码计算</h3>
               <div class="calculator-input">
+                <div class="calc-all-numbers">
+                  <div class="all-red-numbers">
+                    <span>红球号码 (1-33):</span>
+                    <span id="ssq-all-reds"></span>
+                  </div>
+                  <div class="all-blue-numbers">
+                    <span>蓝球号码 (1-16):</span>
+                    <span id="ssq-all-blues"></span>
+                  </div>
+                </div>
                 <div class="calc-numbers">
-                  <span>当前选择:</span>
+                  <span>已选红球:</span>
                   <span id="ssq-calc-nums">-</span>
+                </div>
+                <div class="calc-numbers">
+                  <span>已选蓝球:</span>
+                  <span id="ssq-calc-blues">-</span>
                 </div>
                 <div class="calc-available">
                   <span>可选操作:</span>
@@ -254,7 +282,6 @@
                     <button class="btn btn-sm" onclick="calculateSsq('max')">最大</button>
                     <button class="btn btn-sm" onclick="calculateSsq('min')">最小</button>
                     <button class="btn btn-sm" onclick="calculateSsq('range')">跨度</button>
-                    <button class="btn btn-sm" onclick="calculateSsq('multiply')">乘积</button>
                     <button class="btn btn-sm" onclick="calculateSsq('oddEven')">奇偶比</button>
                     <button class="btn btn-sm" onclick="calculateSsq('size')">大小比</button>
                   </div>

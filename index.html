@@ -47,6 +47,7 @@
           <button class="nav-btn" data-tab="ssq">🔵 双色球</button>
           <button class="nav-btn" data-tab="pl3">🔢 排列三</button>
           <button class="nav-btn" data-tab="pl5">🔢 排列五</button>
+          <button class="nav-btn" data-tab="data-entry">📝 开奖录入</button>
         </nav>
       </aside>
       
@@ -92,6 +93,51 @@
               <div class="analysis-suggestion" id="dlt-suggestion">
                 <h4>📊 选号建议</h4>
                 <div id="dlt-analysis-result">请选择号码后查看分析建议...</div>
+              </div>
+              
+              <div class="panel">
+                <h3>🎫 机选套餐</h3>
+                <p style="color: #64748b; margin-bottom: 20px; font-size: 14px;">根据最近30期走势分析，智能生成号码组合</p>
+                
+                <div class="package-selector" id="dlt-package-selector">
+                  <div class="package-item" data-package="quick5" onclick="selectDltPackage('quick5')">
+                    <div class="package-name">机选5注</div>
+                    <div class="package-price">¥10</div>
+                    <div class="package-desc">5注标准5+2</div>
+                  </div>
+                  <div class="package-item" data-package="quick10" onclick="selectDltPackage('quick10')">
+                    <div class="package-name">机选10注</div>
+                    <div class="package-price">¥20</div>
+                    <div class="package-desc">10注标准5+2</div>
+                  </div>
+                  <div class="package-item" data-package="package18" onclick="selectDltPackage('package18')">
+                    <div class="package-name">18套餐</div>
+                    <div class="package-price">¥18</div>
+                    <div class="package-desc">6注5+2 + 1注5+3复式</div>
+                  </div>
+                  <div class="package-item" data-package="package28" onclick="selectDltPackage('package28')">
+                    <div class="package-name">28套餐</div>
+                    <div class="package-price">¥28</div>
+                    <div class="package-desc">8注5+2 + 1注6+2复式</div>
+                  </div>
+                  <div class="package-item" data-package="package58" onclick="selectDltPackage('package58')">
+                    <div class="package-name">58套餐</div>
+                    <div class="package-price">¥58</div>
+                    <div class="package-desc">8注5+2 + 1注7+2复式</div>
+                  </div>
+                  <div class="package-item" data-package="package88" onclick="selectDltPackage('package88')">
+                    <div class="package-name">88套餐</div>
+                    <div class="package-price">¥88</div>
+                    <div class="package-desc">5注5+2 + 1注7+2 + 1注6+3</div>
+                  </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="generateDltPackage()" style="width: 100%; margin-top: 20px;">生成选中套餐</button>
+              </div>
+              
+              <div class="generated-tickets" id="dlt-generated-tickets" style="display: none;">
+                <h3>🎲 已生成的号码</h3>
+                <div id="dlt-tickets-container"></div>
               </div>
               
               <div class="actions">
@@ -214,6 +260,60 @@
               <div class="analysis-suggestion" id="ssq-suggestion">
                 <h4>📊 选号建议</h4>
                 <div id="ssq-analysis-result">请选择号码后查看分析建议...</div>
+              </div>
+              
+              <div class="panel">
+                <h3>🎫 机选功能</h3>
+                <p style="color: #64748b; margin-bottom: 20px; font-size: 14px;">根据最近30期走势分析，智能生成号码组合</p>
+                
+                <div class="package-selector" id="ssq-package-selector">
+                  <div class="package-item" data-package="ssq-quick1" onclick="selectSsqPackage('quick1')">
+                    <div class="package-name">机选1注</div>
+                    <div class="package-price">¥2</div>
+                    <div class="package-desc">1注标准6+1</div>
+                  </div>
+                  <div class="package-item" data-package="ssq-quick5" onclick="selectSsqPackage('quick5')">
+                    <div class="package-name">机选5注</div>
+                    <div class="package-price">¥10</div>
+                    <div class="package-desc">5注标准6+1</div>
+                  </div>
+                  <div class="package-item" data-package="ssq-quick10" onclick="selectSsqPackage('quick10')">
+                    <div class="package-name">机选10注</div>
+                    <div class="package-price">¥20</div>
+                    <div class="package-desc">10注标准6+1</div>
+                  </div>
+                  <div class="package-item" data-package="ssq-compound" onclick="selectSsqPackage('compound')">
+                    <div class="package-name">复式票</div>
+                    <div class="package-price">自选</div>
+                    <div class="package-desc">自主选择X+Y复式</div>
+                  </div>
+                </div>
+                
+                <div id="ssq-compound-selector" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                  <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div>
+                      <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #334155;">红球数量 (6-16个)</label>
+                      <input type="number" id="ssq-compound-reds" min="6" max="16" value="7" style="width: 100px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+                    <div>
+                      <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #334155;">蓝球数量 (1-16个)</label>
+                      <input type="number" id="ssq-compound-blues" min="1" max="16" value="1" style="width: 100px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                    </div>
+                    <div style="display: flex; align-items: flex-end;">
+                      <button class="btn btn-primary" onclick="calculateSsqCompound()">计算注数</button>
+                    </div>
+                  </div>
+                  <div style="margin-top: 15px; font-size: 14px; color: #3b82f6; font-weight: bold;">
+                    注数: <span id="ssq-compound-count">-</span> 注, 金额: <span id="ssq-compound-amount">-</span> 元
+                  </div>
+                </div>
+                
+                <button class="btn btn-primary" onclick="generateSsqPackage()" style="width: 100%; margin-top: 20px;">生成选中套餐</button>
+              </div>
+              
+              <div class="generated-tickets" id="ssq-generated-tickets" style="display: none;">
+                <h3>🎲 已生成的号码</h3>
+                <div id="ssq-tickets-container"></div>
               </div>
               
               <div class="actions">
@@ -478,6 +578,119 @@
             </div>
           </div>
         </div>
+
+        <div id="data-entry" class="tab-content">
+          <div class="panel">
+            <h3>📝 开奖结果录入</h3>
+            <p style="color: #64748b; margin-bottom: 20px; font-size: 14px;">请输入最新的开奖结果，系统将自动更新历史记录和走势分析。</p>
+            
+            <div class="section-tabs">
+              <button class="section-btn active" data-section="entry-dlt">大乐透</button>
+              <button class="section-btn" data-section="entry-ssq">双色球</button>
+              <button class="section-btn" data-section="entry-pl3">排列三</button>
+              <button class="section-btn" data-section="entry-pl5">排列五</button>
+            </div>
+
+            <div id="entry-dlt" class="section-content active">
+              <div style="max-width: 500px; margin: 0 auto;">
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">期号 (例如: 2026015)</label>
+                  <input type="text" id="entry-dlt-issue" placeholder="请输入期号" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖日期</label>
+                  <input type="date" id="entry-dlt-date" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">前区号码 (5个, 用空格分隔)</label>
+                  <input type="text" id="entry-dlt-reds" placeholder="例如: 03 08 15 22 31" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">后区号码 (2个, 用空格分隔)</label>
+                  <input type="text" id="entry-dlt-blues" placeholder="例如: 02 09" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <button class="btn btn-primary" onclick="addDltResult()" style="width: 100%;">录入开奖结果</button>
+                <div id="entry-dlt-result" style="margin-top: 15px; text-align: center; color: #16a34a; font-weight: bold; display: none;"></div>
+              </div>
+            </div>
+
+            <div id="entry-ssq" class="section-content">
+              <div style="max-width: 500px; margin: 0 auto;">
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">期号 (例如: 2026015)</label>
+                  <input type="text" id="entry-ssq-issue" placeholder="请输入期号" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖日期</label>
+                  <input type="date" id="entry-ssq-date" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">红球号码 (6个, 用空格分隔)</label>
+                  <input type="text" id="entry-ssq-reds" placeholder="例如: 03 08 15 22 31 33" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">蓝球号码</label>
+                  <input type="text" id="entry-ssq-blue" placeholder="例如: 09" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <button class="btn btn-primary" onclick="addSsqResult()" style="width: 100%;">录入开奖结果</button>
+                <div id="entry-ssq-result" style="margin-top: 15px; text-align: center; color: #16a34a; font-weight: bold; display: none;"></div>
+              </div>
+            </div>
+
+            <div id="entry-pl3" class="section-content">
+              <div style="max-width: 500px; margin: 0 auto;">
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">期号 (例如: 2026015)</label>
+                  <input type="text" id="entry-pl3-issue" placeholder="请输入期号" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖日期</label>
+                  <input type="date" id="entry-pl3-date" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖号码 (3个, 用空格分隔)</label>
+                  <input type="text" id="entry-pl3-nums" placeholder="例如: 5 8 3" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <button class="btn btn-primary" onclick="addPl3Result()" style="width: 100%;">录入开奖结果</button>
+                <div id="entry-pl3-result" style="margin-top: 15px; text-align: center; color: #16a34a; font-weight: bold; display: none;"></div>
+              </div>
+            </div>
+
+            <div id="entry-pl5" class="section-content">
+              <div style="max-width: 500px; margin: 0 auto;">
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">期号 (例如: 2026015)</label>
+                  <input type="text" id="entry-pl5-issue" placeholder="请输入期号" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖日期</label>
+                  <input type="date" id="entry-pl5-date" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                  <label style="display: block; margin-bottom: 5px; font-weight: bold; color: #334155;">开奖号码 (5个, 用空格分隔)</label>
+                  <input type="text" id="entry-pl5-nums" placeholder="例如: 5 8 3 2 9" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px;">
+                </div>
+                
+                <button class="btn btn-primary" onclick="addPl5Result()" style="width: 100%;">录入开奖结果</button>
+                <div id="entry-pl5-result" style="margin-top: 15px; text-align: center; color: #16a34a; font-weight: bold; display: none;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </main>
 
       <aside class="right-panel">

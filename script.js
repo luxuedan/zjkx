@@ -16,6 +16,11 @@ let pl5Hundred = null;
 let pl5Ten = null;
 let pl5Unit = null;
 
+let dltHistoryData = [];
+let ssqHistoryData = [];
+let pl3HistoryData = [];
+let pl5HistoryData = [];
+
 const TIPS_DATA = {
   dlt: [
     '前区号码选择要均衡，大小比建议3:2或2:3',
@@ -50,6 +55,7 @@ const TIPS_DATA = {
 function init() {
   checkLoginStatus();
   initGrids();
+  loadSavedHistory();
   loadHistoryData();
   initTrendCharts();
   updateSidePanels('dlt');
@@ -478,7 +484,7 @@ function loadHistoryData() {
 }
 
 function loadDltHistory() {
-  const history = generateMockDltHistory();
+  const history = dltHistoryData.length > 0 ? dltHistoryData : generateMockDltHistory();
   const table = document.getElementById('dlt-history-list');
   table.innerHTML = `
     <table>
@@ -498,10 +504,16 @@ function loadDltHistory() {
       `).join('')}
     </table>
   `;
+  if (history.length > 0) {
+    const latest = history[history.length - 1];
+    document.getElementById('dlt-last-issue').textContent = latest.issue;
+    document.getElementById('dlt-last-reds').textContent = latest.reds.join(' ');
+    document.getElementById('dlt-last-blues').textContent = latest.blues.join(' ');
+  }
 }
 
 function loadSsqHistory() {
-  const history = generateMockSsqHistory();
+  const history = ssqHistoryData.length > 0 ? ssqHistoryData : generateMockSsqHistory();
   const table = document.getElementById('ssq-history-list');
   table.innerHTML = `
     <table>
@@ -523,10 +535,16 @@ function loadSsqHistory() {
       `).join('')}
     </table>
   `;
+  if (history.length > 0) {
+    const latest = history[history.length - 1];
+    document.getElementById('ssq-last-issue').textContent = latest.issue;
+    document.getElementById('ssq-last-reds').textContent = latest.reds.join(' ');
+    document.getElementById('ssq-last-blue').textContent = latest.blue;
+  }
 }
 
 function loadPl3History() {
-  const history = generateMockPl3History();
+  const history = pl3HistoryData.length > 0 ? pl3HistoryData : generateMockPl3History();
   const table = document.getElementById('pl3-history-list');
   table.innerHTML = `
     <table>
@@ -544,10 +562,15 @@ function loadPl3History() {
       `).join('')}
     </table>
   `;
+  if (history.length > 0) {
+    const latest = history[history.length - 1];
+    document.getElementById('pl3-last-issue').textContent = latest.issue;
+    document.getElementById('pl3-last-nums').textContent = latest.nums.join(' ');
+  }
 }
 
 function loadPl5History() {
-  const history = generateMockPl5History();
+  const history = pl5HistoryData.length > 0 ? pl5HistoryData : generateMockPl5History();
   const table = document.getElementById('pl5-history-list');
   table.innerHTML = `
     <table>
@@ -567,6 +590,11 @@ function loadPl5History() {
       `).join('')}
     </table>
   `;
+  if (history.length > 0) {
+    const latest = history[history.length - 1];
+    document.getElementById('pl5-last-issue').textContent = latest.issue;
+    document.getElementById('pl5-last-nums').textContent = latest.nums.join(' ');
+  }
 }
 
 function getDayOfWeek(date) {
@@ -1056,7 +1084,7 @@ function searchDltHistory() {
     loadDltHistory();
     return;
   }
-  const history = generateMockDltHistory();
+  const history = dltHistoryData.length > 0 ? dltHistoryData : generateMockDltHistory();
   const filtered = history.filter(h => h.issue.includes(keyword));
   const table = document.getElementById('dlt-history-list');
   table.innerHTML = `
@@ -1085,7 +1113,7 @@ function searchSsqHistory() {
     loadSsqHistory();
     return;
   }
-  const history = generateMockSsqHistory();
+  const history = ssqHistoryData.length > 0 ? ssqHistoryData : generateMockSsqHistory();
   const filtered = history.filter(h => h.issue.includes(keyword));
   const table = document.getElementById('ssq-history-list');
   table.innerHTML = `
@@ -1116,7 +1144,7 @@ function searchPl3History() {
     loadPl3History();
     return;
   }
-  const history = generateMockPl3History();
+  const history = pl3HistoryData.length > 0 ? pl3HistoryData : generateMockPl3History();
   const filtered = history.filter(h => h.issue.includes(keyword));
   const table = document.getElementById('pl3-history-list');
   table.innerHTML = `
@@ -1143,7 +1171,7 @@ function searchPl5History() {
     loadPl5History();
     return;
   }
-  const history = generateMockPl5History();
+  const history = pl5HistoryData.length > 0 ? pl5HistoryData : generateMockPl5History();
   const filtered = history.filter(h => h.issue.includes(keyword));
   const table = document.getElementById('pl5-history-list');
   table.innerHTML = `
@@ -1167,7 +1195,7 @@ function searchPl5History() {
 }
 
 function renderDltTrendChart() {
-  const history = generateMockDltHistory().slice(0, 50);
+  const history = (dltHistoryData.length > 0 ? dltHistoryData : generateMockDltHistory()).slice(0, 50);
   const chart = document.getElementById('dlt-trend-chart');
   
   let html = `<table class="trend-table">
@@ -1204,7 +1232,7 @@ function renderDltTrendChart() {
 }
 
 function renderSsqTrendChart() {
-  const history = generateMockSsqHistory().slice(0, 50);
+  const history = (ssqHistoryData.length > 0 ? ssqHistoryData : generateMockSsqHistory()).slice(0, 50);
   const chart = document.getElementById('ssq-trend-chart');
   
   let html = `<table class="trend-table">
@@ -1243,7 +1271,7 @@ function renderSsqTrendChart() {
 }
 
 function renderPl3TrendChart() {
-  const history = generateMockPl3History().slice(0, 50);
+  const history = (pl3HistoryData.length > 0 ? pl3HistoryData : generateMockPl3History()).slice(0, 50);
   const chart = document.getElementById('pl3-trend-chart');
   
   let html = `<table class="trend-table">
@@ -1277,7 +1305,7 @@ function renderPl3TrendChart() {
 }
 
 function renderPl5TrendChart() {
-  const history = generateMockPl5History().slice(0, 50);
+  const history = (pl5HistoryData.length > 0 ? pl5HistoryData : generateMockPl5History()).slice(0, 50);
   const chart = document.getElementById('pl5-trend-chart');
   
   let html = `<table class="trend-table">
@@ -1348,7 +1376,9 @@ document.querySelectorAll('.nav-btn').forEach(btn => {
     const tab = this.dataset.tab;
     document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
     document.getElementById(tab).classList.add('active');
-    updateSidePanels(tab);
+    if (tab !== 'data-entry') {
+      updateSidePanels(tab);
+    }
   });
 });
 
@@ -1365,13 +1395,13 @@ document.querySelectorAll('.section-btn').forEach(btn => {
 });
 
 function analyzeDltTrend() {
-  const history = generateMockDltHistory().slice(0, 30);
+  const history = (dltHistoryData.length > 0 ? dltHistoryData : generateMockDltHistory()).slice(0, 30);
   const analysis = generateTrendAnalysis(dltRedSelected, dltBlueSelected, history, 'dlt');
   document.getElementById('dlt-analysis-result').innerHTML = formatAnalysisResult(analysis);
 }
 
 function analyzeSsqTrend() {
-  const history = generateMockSsqHistory().slice(0, 30);
+  const history = (ssqHistoryData.length > 0 ? ssqHistoryData : generateMockSsqHistory()).slice(0, 30);
   const analysis = generateTrendAnalysis(ssqRedSelected, ssqBlueSelected, history, 'ssq');
   document.getElementById('ssq-analysis-result').innerHTML = formatAnalysisResult(analysis);
 }
@@ -1560,4 +1590,542 @@ function analyzeTicket() {
   html += '<p style="font-size: 11px; color: #999; margin-top: 15px;">* 票花分析仅供参考，不构成购彩建议</p>';
   
   resultDiv.innerHTML = html;
+}
+
+function loadSavedHistory() {
+  const savedDlt = localStorage.getItem('dreamer_dlt_history');
+  const savedSsq = localStorage.getItem('dreamer_ssq_history');
+  const savedPl3 = localStorage.getItem('dreamer_pl3_history');
+  const savedPl5 = localStorage.getItem('dreamer_pl5_history');
+  
+  if (savedDlt) {
+    dltHistoryData = JSON.parse(savedDlt);
+  }
+  if (savedSsq) {
+    ssqHistoryData = JSON.parse(savedSsq);
+  }
+  if (savedPl3) {
+    pl3HistoryData = JSON.parse(savedPl3);
+  }
+  if (savedPl5) {
+    pl5HistoryData = JSON.parse(savedPl5);
+  }
+}
+
+function saveHistoryData() {
+  localStorage.setItem('dreamer_dlt_history', JSON.stringify(dltHistoryData));
+  localStorage.setItem('dreamer_ssq_history', JSON.stringify(ssqHistoryData));
+  localStorage.setItem('dreamer_pl3_history', JSON.stringify(pl3HistoryData));
+  localStorage.setItem('dreamer_pl5_history', JSON.stringify(pl5HistoryData));
+}
+
+function addDltResult() {
+  const issue = document.getElementById('entry-dlt-issue').value.trim();
+  const date = document.getElementById('entry-dlt-date').value;
+  const redsStr = document.getElementById('entry-dlt-reds').value.trim();
+  const bluesStr = document.getElementById('entry-dlt-blues').value.trim();
+  const resultDiv = document.getElementById('entry-dlt-result');
+  
+  if (!issue || !date || !redsStr || !bluesStr) {
+    resultDiv.textContent = '请填写完整信息';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  const reds = redsStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  const blues = bluesStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  
+  if (reds.length !== 5 || reds.some(n => n < 1 || n > 35)) {
+    resultDiv.textContent = '前区号码必须是5个1-35之间的数字';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  if (blues.length !== 2 || blues.some(n => n < 1 || n > 12)) {
+    resultDiv.textContent = '后区号码必须是2个1-12之间的数字';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  reds.sort((a, b) => a - b);
+  blues.sort((a, b) => a - b);
+  
+  const dateObj = new Date(date);
+  const weekDay = getDayOfWeek(dateObj);
+  
+  const newRecord = {
+    issue: issue,
+    date: date,
+    weekDay: weekDay,
+    reds: reds,
+    blues: blues,
+    sum: reds.reduce((a, b) => a + b, 0),
+    range: Math.max(...reds) - Math.min(...reds)
+  };
+  
+  const existingIndex = dltHistoryData.findIndex(h => h.issue === issue);
+  if (existingIndex > -1) {
+    dltHistoryData[existingIndex] = newRecord;
+  } else {
+    dltHistoryData.push(newRecord);
+    dltHistoryData.sort((a, b) => a.issue.localeCompare(b.issue));
+  }
+  
+  saveHistoryData();
+  loadDltHistory();
+  renderDltTrendChart();
+  updateSidePanels('dlt');
+  
+  resultDiv.textContent = '开奖结果录入成功！';
+  resultDiv.style.color = '#16a34a';
+  resultDiv.style.display = 'block';
+  
+  setTimeout(() => {
+    resultDiv.style.display = 'none';
+  }, 3000);
+}
+
+function addSsqResult() {
+  const issue = document.getElementById('entry-ssq-issue').value.trim();
+  const date = document.getElementById('entry-ssq-date').value;
+  const redsStr = document.getElementById('entry-ssq-reds').value.trim();
+  const blueStr = document.getElementById('entry-ssq-blue').value.trim();
+  const resultDiv = document.getElementById('entry-ssq-result');
+  
+  if (!issue || !date || !redsStr || !blueStr) {
+    resultDiv.textContent = '请填写完整信息';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  const reds = redsStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  const blue = parseInt(blueStr);
+  
+  if (reds.length !== 6 || reds.some(n => n < 1 || n > 33)) {
+    resultDiv.textContent = '红球号码必须是6个1-33之间的数字';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  if (isNaN(blue) || blue < 1 || blue > 16) {
+    resultDiv.textContent = '蓝球号码必须是1-16之间的数字';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  reds.sort((a, b) => a - b);
+  
+  const dateObj = new Date(date);
+  const weekDay = getDayOfWeek(dateObj);
+  
+  const newRecord = {
+    issue: issue,
+    date: date,
+    weekDay: weekDay,
+    reds: reds,
+    blue: blue,
+    sum: reds.reduce((a, b) => a + b, 0),
+    range: Math.max(...reds) - Math.min(...reds)
+  };
+  
+  const existingIndex = ssqHistoryData.findIndex(h => h.issue === issue);
+  if (existingIndex > -1) {
+    ssqHistoryData[existingIndex] = newRecord;
+  } else {
+    ssqHistoryData.push(newRecord);
+    ssqHistoryData.sort((a, b) => a.issue.localeCompare(b.issue));
+  }
+  
+  saveHistoryData();
+  loadSsqHistory();
+  renderSsqTrendChart();
+  updateSidePanels('ssq');
+  
+  resultDiv.textContent = '开奖结果录入成功！';
+  resultDiv.style.color = '#16a34a';
+  resultDiv.style.display = 'block';
+  
+  setTimeout(() => {
+    resultDiv.style.display = 'none';
+  }, 3000);
+}
+
+function addPl3Result() {
+  const issue = document.getElementById('entry-pl3-issue').value.trim();
+  const date = document.getElementById('entry-pl3-date').value;
+  const numsStr = document.getElementById('entry-pl3-nums').value.trim();
+  const resultDiv = document.getElementById('entry-pl3-result');
+  
+  if (!issue || !date || !numsStr) {
+    resultDiv.textContent = '请填写完整信息';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  const nums = numsStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  
+  if (nums.length !== 3 || nums.some(n => n < 0 || n > 9)) {
+    resultDiv.textContent = '开奖号码必须是3个0-9之间的数字';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  const dateObj = new Date(date);
+  const weekDay = getDayOfWeek(dateObj);
+  
+  const newRecord = {
+    issue: issue,
+    date: date,
+    weekDay: weekDay,
+    nums: nums,
+    sum: nums.reduce((a, b) => a + b, 0)
+  };
+  
+  const existingIndex = pl3HistoryData.findIndex(h => h.issue === issue);
+  if (existingIndex > -1) {
+    pl3HistoryData[existingIndex] = newRecord;
+  } else {
+    pl3HistoryData.push(newRecord);
+    pl3HistoryData.sort((a, b) => a.issue.localeCompare(b.issue));
+  }
+  
+  saveHistoryData();
+  loadPl3History();
+  renderPl3TrendChart();
+  updateSidePanels('pl3');
+  
+  resultDiv.textContent = '开奖结果录入成功！';
+  resultDiv.style.color = '#16a34a';
+  resultDiv.style.display = 'block';
+  
+  setTimeout(() => {
+    resultDiv.style.display = 'none';
+  }, 3000);
+}
+
+function addPl5Result() {
+  const issue = document.getElementById('entry-pl5-issue').value.trim();
+  const date = document.getElementById('entry-pl5-date').value;
+  const numsStr = document.getElementById('entry-pl5-nums').value.trim();
+  const resultDiv = document.getElementById('entry-pl5-result');
+  
+  if (!issue || !date || !numsStr) {
+    resultDiv.textContent = '请填写完整信息';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  const nums = numsStr.split(/\s+/).map(n => parseInt(n)).filter(n => !isNaN(n));
+  
+  if (nums.length !== 5 || nums.some(n => n < 0 || n > 9)) {
+    resultDiv.textContent = '开奖号码必须是5个0-9之间的数字';
+    resultDiv.style.color = '#e53935';
+    resultDiv.style.display = 'block';
+    return;
+  }
+  
+  const dateObj = new Date(date);
+  const weekDay = getDayOfWeek(dateObj);
+  
+  const newRecord = {
+    issue: issue,
+    date: date,
+    weekDay: weekDay,
+    nums: nums,
+    sum: nums.reduce((a, b) => a + b, 0)
+  };
+  
+  const existingIndex = pl5HistoryData.findIndex(h => h.issue === issue);
+  if (existingIndex > -1) {
+    pl5HistoryData[existingIndex] = newRecord;
+  } else {
+    pl5HistoryData.push(newRecord);
+    pl5HistoryData.sort((a, b) => a.issue.localeCompare(b.issue));
+  }
+  
+  saveHistoryData();
+  loadPl5History();
+  renderPl5TrendChart();
+  updateSidePanels('pl5');
+  
+  resultDiv.textContent = '开奖结果录入成功！';
+  resultDiv.style.color = '#16a34a';
+  resultDiv.style.display = 'block';
+  
+  setTimeout(() => {
+    resultDiv.style.display = 'none';
+  }, 3000);
+}
+
+let selectedDltPackage = null;
+let selectedSsqPackage = null;
+
+function selectDltPackage(packageName) {
+  selectedDltPackage = packageName;
+  document.querySelectorAll('.package-selector .package-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  document.querySelector(`[data-package="${packageName}"]`).classList.add('active');
+}
+
+function selectSsqPackage(packageName) {
+  selectedSsqPackage = packageName;
+  document.querySelectorAll('#ssq-package-selector .package-item').forEach(item => {
+    item.classList.remove('active');
+  });
+  document.querySelector(`#ssq-package-selector [data-package="${packageName}"]`).classList.add('active');
+  
+  document.getElementById('ssq-compound-selector').style.display = packageName === 'compound' ? 'block' : 'none';
+}
+
+function calculateSsqCompound() {
+  const redCount = parseInt(document.getElementById('ssq-compound-reds').value) || 6;
+  const blueCount = parseInt(document.getElementById('ssq-compound-blues').value) || 1;
+  
+  const redCombinations = combination(redCount, 6);
+  const total = redCombinations * blueCount;
+  const amount = total * 2;
+  
+  document.getElementById('ssq-compound-count').textContent = total;
+  document.getElementById('ssq-compound-amount').textContent = amount;
+}
+
+function combination(n, k) {
+  if (k > n) return 0;
+  if (k === 0 || k === n) return 1;
+  k = Math.min(k, n - k);
+  let result = 1;
+  for (let i = 0; i < k; i++) {
+    result = result * (n - i) / (i + 1);
+  }
+  return result;
+}
+
+function getTrendAnalysisData(gameType) {
+  const history = gameType === 'dlt' 
+    ? (dltHistoryData.length > 0 ? dltHistoryData : generateMockDltHistory())
+    : (ssqHistoryData.length > 0 ? ssqHistoryData : generateMockSsqHistory());
+  
+  const recentHistory = history.slice(-30);
+  const redCounts = {};
+  const blueCounts = {};
+  
+  if (gameType === 'dlt') {
+    for (let i = 1; i <= 35; i++) redCounts[i] = 0;
+    for (let i = 1; i <= 12; i++) blueCounts[i] = 0;
+    recentHistory.forEach(record => {
+      record.reds.forEach(r => redCounts[r]++);
+      record.blues.forEach(b => blueCounts[b]++);
+    });
+  } else {
+    for (let i = 1; i <= 33; i++) redCounts[i] = 0;
+    for (let i = 1; i <= 16; i++) blueCounts[i] = 0;
+    recentHistory.forEach(record => {
+      record.reds.forEach(r => redCounts[r]++);
+      blueCounts[record.blue]++;
+    });
+  }
+  
+  const hotReds = Object.entries(redCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(e => parseInt(e[0]));
+  const coldReds = Object.entries(redCounts).sort((a, b) => a[1] - b[1]).slice(0, 10).map(e => parseInt(e[0]));
+  const hotBlues = Object.entries(blueCounts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(e => parseInt(e[0]));
+  const coldBlues = Object.entries(blueCounts).sort((a, b) => a[1] - b[1]).slice(0, 5).map(e => parseInt(e[0]));
+  
+  return { hotReds, coldReds, hotBlues, coldBlues, history: recentHistory };
+}
+
+function generateSmartNumbers(gameType, count, redCount, blueCount) {
+  const trend = getTrendAnalysisData(gameType);
+  const tickets = [];
+  const maxRed = gameType === 'dlt' ? 35 : 33;
+  const maxBlue = gameType === 'dlt' ? 12 : 16;
+  const requiredRed = gameType === 'dlt' ? 5 : 6;
+  
+  for (let t = 0; t < count; t++) {
+    let reds = [];
+    let blues = [];
+    
+    const hotRatio = 0.6;
+    const coldRatio = 0.3;
+    const randomRatio = 0.1;
+    
+    const hotRedsCount = Math.round(requiredRed * hotRatio);
+    const coldRedsCount = Math.round(requiredRed * coldRatio);
+    const randomRedsCount = requiredRed - hotRedsCount - coldRedsCount;
+    
+    const hotSelected = [];
+    while (hotSelected.length < hotRedsCount) {
+      const idx = Math.floor(Math.random() * trend.hotReds.length);
+      const num = trend.hotReds[idx];
+      if (!hotSelected.includes(num)) hotSelected.push(num);
+    }
+    
+    const coldSelected = [];
+    while (coldSelected.length < coldRedsCount) {
+      const idx = Math.floor(Math.random() * trend.coldReds.length);
+      const num = trend.coldReds[idx];
+      if (!coldSelected.includes(num) && !hotSelected.includes(num)) coldSelected.push(num);
+    }
+    
+    const randomSelected = [];
+    while (randomSelected.length < randomRedsCount) {
+      const num = Math.floor(Math.random() * maxRed) + 1;
+      if (!hotSelected.includes(num) && !coldSelected.includes(num) && !randomSelected.includes(num)) {
+        randomSelected.push(num);
+      }
+    }
+    
+    reds = [...hotSelected, ...coldSelected, ...randomSelected].sort((a, b) => a - b);
+    
+    for (let b = 0; b < blueCount; b++) {
+      let blue;
+      do {
+        if (Math.random() < 0.7) {
+          blue = trend.hotBlues[Math.floor(Math.random() * trend.hotBlues.length)];
+        } else {
+          blue = trend.coldBlues[Math.floor(Math.random() * trend.coldBlues.length)];
+        }
+      } while (blues.includes(blue));
+      blues.push(blue);
+    }
+    
+    blues.sort((a, b) => a - b);
+    
+    tickets.push({
+      reds: reds.slice(0, redCount || requiredRed),
+      blues: blues.slice(0, blueCount),
+      type: `${redCount || requiredRed}+${blueCount}`,
+      smart: true
+    });
+  }
+  
+  return tickets;
+}
+
+function generateDltPackage() {
+  if (!selectedDltPackage) {
+    alert('请先选择一个套餐');
+    return;
+  }
+  
+  let tickets = [];
+  
+  switch (selectedDltPackage) {
+    case 'quick5':
+      tickets = generateSmartNumbers('dlt', 5, 5, 2);
+      break;
+    case 'quick10':
+      tickets = generateSmartNumbers('dlt', 10, 5, 2);
+      break;
+    case 'package18':
+      tickets = [...generateSmartNumbers('dlt', 6, 5, 2)];
+      tickets.push({
+        reds: generateSmartNumbers('dlt', 1, 5, 3)[0].reds,
+        blues: generateSmartNumbers('dlt', 1, 5, 3)[0].blues,
+        type: '5+3复式',
+        smart: true
+      });
+      break;
+    case 'package28':
+      tickets = [...generateSmartNumbers('dlt', 8, 5, 2)];
+      tickets.push({
+        reds: generateSmartNumbers('dlt', 1, 6, 2)[0].reds,
+        blues: generateSmartNumbers('dlt', 1, 6, 2)[0].blues,
+        type: '6+2复式',
+        smart: true
+      });
+      break;
+    case 'package58':
+      tickets = [...generateSmartNumbers('dlt', 8, 5, 2)];
+      tickets.push({
+        reds: generateSmartNumbers('dlt', 1, 7, 2)[0].reds,
+        blues: generateSmartNumbers('dlt', 1, 7, 2)[0].blues,
+        type: '7+2复式',
+        smart: true
+      });
+      break;
+    case 'package88':
+      tickets = [...generateSmartNumbers('dlt', 5, 5, 2)];
+      tickets.push({
+        reds: generateSmartNumbers('dlt', 1, 7, 2)[0].reds,
+        blues: generateSmartNumbers('dlt', 1, 7, 2)[0].blues,
+        type: '7+2复式',
+        smart: true
+      });
+      tickets.push({
+        reds: generateSmartNumbers('dlt', 1, 6, 3)[0].reds,
+        blues: generateSmartNumbers('dlt', 1, 6, 3)[0].blues,
+        type: '6+3复式',
+        smart: true
+      });
+      break;
+  }
+  
+  displayGeneratedTickets('dlt', tickets);
+}
+
+function generateSsqPackage() {
+  if (!selectedSsqPackage) {
+    alert('请先选择一个套餐');
+    return;
+  }
+  
+  let tickets = [];
+  
+  switch (selectedSsqPackage) {
+    case 'quick1':
+      tickets = generateSmartNumbers('ssq', 1, 6, 1);
+      break;
+    case 'quick5':
+      tickets = generateSmartNumbers('ssq', 5, 6, 1);
+      break;
+    case 'quick10':
+      tickets = generateSmartNumbers('ssq', 10, 6, 1);
+      break;
+    case 'compound':
+      const redCount = parseInt(document.getElementById('ssq-compound-reds').value) || 7;
+      const blueCount = parseInt(document.getElementById('ssq-compound-blues').value) || 1;
+      const ticket = generateSmartNumbers('ssq', 1, redCount, blueCount)[0];
+      ticket.type = `${redCount}+${blueCount}复式`;
+      tickets = [ticket];
+      break;
+  }
+  
+  displayGeneratedTickets('ssq', tickets);
+}
+
+function displayGeneratedTickets(gameType, tickets) {
+  const container = gameType === 'dlt' ? document.getElementById('dlt-tickets-container') : document.getElementById('ssq-tickets-container');
+  const wrapper = gameType === 'dlt' ? document.getElementById('dlt-generated-tickets') : document.getElementById('ssq-generated-tickets');
+  
+  let html = '';
+  tickets.forEach((ticket, index) => {
+    html += `
+      <div class="generated-ticket">
+        <div class="ticket-header">
+          <span class="ticket-number">第 ${index + 1} 注</span>
+          <span class="ticket-type">${ticket.type}</span>
+        </div>
+        <div class="ticket-numbers">
+          ${ticket.reds.map(r => `<span class="ticket-red">${r.toString().padStart(2, '0')}</span>`).join('')}
+          ${ticket.blues.map(b => `<span class="ticket-blue">${b.toString().padStart(2, '0')}</span>`).join('')}
+        </div>
+        <div class="ticket-summary">
+          ${ticket.smart ? '✅ 智能选号 (基于近30期走势分析)' : '📝 手动选号'}
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+  wrapper.style.display = 'block';
 }

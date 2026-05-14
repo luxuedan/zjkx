@@ -603,46 +603,58 @@ function getDayOfWeek(date) {
 }
 
 function generateMockDltHistory() {
-  const history = [];
-  const baseDate = new Date('2026-05-13');
-  let issueNum = 150;
-  
-  for (let i = 0; i < 30; i++) {
-    let date = new Date(baseDate);
-    date.setDate(date.getDate() - i);
-    const dayOfWeek = date.getDay();
-    
-    if (dayOfWeek !== 1 && dayOfWeek !== 3 && dayOfWeek !== 6) {
-      continue;
-    }
-    
-    const dateStr = formatDate(date);
-    const weekDay = getDayOfWeek(date);
-    
-    const reds = [];
-    while (reds.length < 5) {
-      const num = Math.floor(Math.random() * 35) + 1;
-      if (!reds.includes(num)) reds.push(num);
-    }
-    reds.sort((a, b) => a - b);
-    const blues = [];
-    while (blues.length < 2) {
-      const num = Math.floor(Math.random() * 12) + 1;
-      if (!blues.includes(num)) blues.push(num);
-    }
-    blues.sort((a, b) => a - b);
-    history.push({
-      issue: `2026${issueNum.toString().padStart(3, '0')}`,
-      date: dateStr,
-      weekDay: weekDay,
-      reds,
-      blues,
-      sum: reds.reduce((a, b) => a + b, 0),
-      range: Math.max(...reds) - Math.min(...reds)
-    });
-    issueNum--;
-  }
-  return history.reverse();
+  return [
+    {"issue":"26003","date":"2026-01-01","weekDay":"周四","reds":[03,08,15,22,31],"blues":[02,09],"sum":79,"range":28},
+    {"issue":"26004","date":"2026-01-04","weekDay":"周日","reds":[01,12,18,25,33],"blues":[05,10],"sum":89,"range":32},
+    {"issue":"26005","date":"2026-01-06","weekDay":"周二","reds":[05,11,19,27,35],"blues":[03,07],"sum":97,"range":30},
+    {"issue":"26006","date":"2026-01-09","weekDay":"周五","reds":[02,09,16,24,30],"blues":[01,08],"sum":81,"range":28},
+    {"issue":"26007","date":"2026-01-11","weekDay":"周日","reds":[07,14,21,28,32],"blues":[04,12],"sum":102,"range":25},
+    {"issue":"26008","date":"2026-01-13","weekDay":"周二","reds":[04,10,17,23,34],"blues":[06,11],"sum":88,"range":30},
+    {"issue":"26009","date":"2026-01-16","weekDay":"周五","reds":[06,13,20,26,29],"blues":[02,05],"sum":94,"range":23},
+    {"issue":"26010","date":"2026-01-18","weekDay":"周日","reds":[08,15,19,22,35],"blues":[03,09],"sum":99,"range":27},
+    {"issue":"26011","date":"2026-01-20","weekDay":"周二","reds":[01,09,14,27,31],"blues":[07,10],"sum":82,"range":30},
+    {"issue":"26012","date":"2026-01-23","weekDay":"周五","reds":[03,11,18,25,33],"blues":[01,06],"sum":90,"range":30},
+    {"issue":"26013","date":"2026-01-25","weekDay":"周日","reds":[05,12,17,24,30],"blues":[04,08],"sum":88,"range":25},
+    {"issue":"26014","date":"2026-01-27","weekDay":"周二","reds":[02,07,16,21,34],"blues":[05,12],"sum":80,"range":32},
+    {"issue":"26015","date":"2026-01-30","weekDay":"周五","reds":[09,13,20,26,32],"blues":[02,11],"sum":100,"range":23},
+    {"issue":"26016","date":"2026-02-01","weekDay":"周日","reds":[04,10,19,23,35],"blues":[03,07],"sum":91,"range":31},
+    {"issue":"26017","date":"2026-02-03","weekDay":"周二","reds":[01,08,15,28,31],"blues":[06,09],"sum":83,"range":30},
+    {"issue":"26018","date":"2026-02-06","weekDay":"周五","reds":[06,12,18,25,29],"blues":[01,08],"sum":90,"range":23},
+    {"issue":"26019","date":"2026-02-08","weekDay":"周日","reds":[07,14,22,27,33],"blues":[04,10],"sum":103,"range":26},
+    {"issue":"26020","date":"2026-02-10","weekDay":"周二","reds":[02,11,17,24,30],"blues":[05,12],"sum":84,"range":28},
+    {"issue":"26021","date":"2026-02-13","weekDay":"周五","reds":[03,09,16,23,34],"blues":[02,07],"sum":85,"range":31},
+    {"issue":"26022","date":"2026-02-15","weekDay":"周日","reds":[08,15,21,26,32],"blues":[03,09],"sum":102,"range":24},
+    {"issue":"26023","date":"2026-02-17","weekDay":"周二","reds":[05,13,19,25,31],"blues":[06,11],"sum":93,"range":26},
+    {"issue":"26024","date":"2026-02-20","weekDay":"周五","reds":[01,10,18,27,35],"blues":[01,08],"sum":91,"range":34},
+    {"issue":"26025","date":"2026-02-22","weekDay":"周日","reds":[04,12,16,23,28],"blues":[04,10],"sum":83,"range":24},
+    {"issue":"26026","date":"2026-02-24","weekDay":"周二","reds":[06,09,17,24,33],"blues":[05,07],"sum":89,"range":27},
+    {"issue":"26027","date":"2026-02-27","weekDay":"周五","reds":[02,08,14,21,30],"blues":[02,12],"sum":75,"range":28},
+    {"issue":"26028","date":"2026-02-29","weekDay":"周日","reds":[07,11,19,26,34],"blues":[03,09],"sum":97,"range":27},
+    {"issue":"26029","date":"2026-03-02","weekDay":"周二","reds":[03,15,20,25,32],"blues":[06,11],"sum":95,"range":29},
+    {"issue":"26030","date":"2026-03-05","weekDay":"周五","reds":[01,09,16,23,31],"blues":[01,08],"sum":80,"range":30},
+    {"issue":"26031","date":"2026-03-07","weekDay":"周日","reds":[05,12,18,27,35],"blues":[04,10],"sum":97,"range":30},
+    {"issue":"26032","date":"2026-03-09","weekDay":"周二","reds":[04,10,17,24,28],"blues":[05,07],"sum":83,"range":24},
+    {"issue":"26033","date":"2026-03-12","weekDay":"周五","reds":[06,13,21,26,33],"blues":[02,12],"sum":99,"range":27},
+    {"issue":"26034","date":"2026-03-14","weekDay":"周日","reds":[08,15,19,25,30],"blues":[03,09],"sum":97,"range":22},
+    {"issue":"26035","date":"2026-03-16","weekDay":"周二","reds":[02,07,14,22,34],"blues":[06,11],"sum":79,"range":32},
+    {"issue":"26036","date":"2026-03-19","weekDay":"周五","reds":[09,16,20,27,31],"blues":[01,08],"sum":93,"range":22},
+    {"issue":"26037","date":"2026-03-21","weekDay":"周日","reds":[03,04,17,21,27],"blues":[06,08],"sum":72,"range":24},
+    {"issue":"26038","date":"2026-03-23","weekDay":"周二","reds":[05,06,13,18,28],"blues":[07,08],"sum":70,"range":23},
+    {"issue":"26039","date":"2026-03-26","weekDay":"周五","reds":[01,02,08,14,19],"blues":[03,06],"sum":44,"range":18},
+    {"issue":"26040","date":"2026-03-28","weekDay":"周日","reds":[03,06,07,20,25],"blues":[04,07],"sum":61,"range":22},
+    {"issue":"26041","date":"2026-03-30","weekDay":"周二","reds":[01,05,21,25,27],"blues":[04,11],"sum":79,"range":26},
+    {"issue":"26042","date":"2026-04-02","weekDay":"周五","reds":[02,07,10,11,22],"blues":[10,11],"sum":52,"range":20},
+    {"issue":"26043","date":"2026-04-04","weekDay":"周日","reds":[03,07,08,15,23],"blues":[11,12],"sum":56,"range":20},
+    {"issue":"26044","date":"2026-04-06","weekDay":"周二","reds":[03,08,09,10,24],"blues":[07,10],"sum":54,"range":21},
+    {"issue":"26045","date":"2026-04-09","weekDay":"周五","reds":[01,03,09,12,15],"blues":[01,11],"sum":40,"range":14},
+    {"issue":"26046","date":"2026-04-11","weekDay":"周日","reds":[01,02,03,10,13],"blues":[06,10],"sum":29,"range":12},
+    {"issue":"26047","date":"2026-04-13","weekDay":"周二","reds":[01,05,11,14,15],"blues":[06,06],"sum":46,"range":14},
+    {"issue":"26048","date":"2026-04-16","weekDay":"周五","reds":[02,06,12,15,17],"blues":[06,10],"sum":52,"range":15},
+    {"issue":"26049","date":"2026-04-18","weekDay":"周日","reds":[03,05,07,13,16],"blues":[02,03],"sum":44,"range":13},
+    {"issue":"26050","date":"2026-04-20","weekDay":"周二","reds":[01,08,14,17,18],"blues":[08,10],"sum":58,"range":17},
+    {"issue":"26051","date":"2026-04-23","weekDay":"周五","reds":[02,09,15,18,27],"blues":[02,11],"sum":71,"range":25},
+    {"issue":"26052","date":"2026-04-25","weekDay":"周日","reds":[02,03,16,19,33],"blues":[02,12],"sum":73,"range":31}
+  ];
 }
 
 function generateMockSsqHistory() {

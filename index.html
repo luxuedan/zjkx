@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>梦想家 </title>
+  <title>梦想家 - 彩票分析系统</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -29,9 +29,19 @@
   </div>
 
   <div id="main-content" class="container" style="display: none;">
-    <header>
-      <h1>✨ 梦想家</h1>
-      <p></p>
+    <header class="main-header">
+      <div class="header-left">
+        <h1>✨ 梦想家</h1>
+        <p></p>
+      </div>
+      
+      <nav class="top-nav">
+        <button class="nav-btn active" data-tab="dlt">大乐透</button>
+        <button class="nav-btn" data-tab="ssq">双色球</button>
+        <button class="nav-btn" data-tab="pl3">排列三</button>
+        <button class="nav-btn" data-tab="pl5">排列五</button>
+      </nav>
+
       <div class="header-right">
         <span class="user-info" id="user-info">欢迎, root</span>
         <button class="btn btn-logout" onclick="logout()">退出登录</button>
@@ -39,13 +49,6 @@
     </header>
 
     <div class="main-layout">
-      <nav class="left-nav">
-        <button class="nav-btn active" data-tab="dlt">大乐透</button>
-        <button class="nav-btn" data-tab="ssq">双色球</button>
-        <button class="nav-btn" data-tab="pl3">排列三</button>
-        <button class="nav-btn" data-tab="pl5">排列五</button>
-      </nav>
-
       <main class="main-content">
         <div id="dlt" class="tab-content active">
           <div class="section-tabs">
@@ -60,13 +63,13 @@
               <h3>大乐透 - 号码选择</h3>
               <div class="last-draw">
                 <strong>上一期开奖:</strong> 
-                <span>期号: <span id="dlt-last-issue">2024150</span></span>
+                <span>期号: <span id="dlt-last-issue">2026015</span></span>
                 <span>前区: <span id="dlt-last-reds">03 08 15 22 31</span></span>
                 <span>后区: <span id="dlt-last-blues">02 09</span></span>
               </div>
               
-              <div class="number-input">
-                <div class="input-group">
+              <div class="number-selection">
+                <div class="main-selection">
                   <label>前区号码 (选5个, 1-35)</label>
                   <div class="number-grid" id="dlt-red-grid"></div>
                   <div class="selected-info">
@@ -74,14 +77,20 @@
                     <span id="dlt-red-selected" class="selected-nums"></span>
                   </div>
                 </div>
-                <div class="input-group">
+                
+                <div class="secondary-selection">
                   <label>后区号码 (选2个, 1-12)</label>
-                  <div class="number-grid" id="dlt-blue-grid"></div>
+                  <div class="number-grid small-grid" id="dlt-blue-grid"></div>
                   <div class="selected-info">
                     <span>已选后区:</span>
                     <span id="dlt-blue-selected" class="selected-nums"></span>
                   </div>
                 </div>
+              </div>
+              
+              <div class="analysis-suggestion" id="dlt-suggestion">
+                <h4>📊 选号建议</h4>
+                <div id="dlt-analysis-result">请选择号码后查看分析建议...</div>
               </div>
               
               <div class="actions">
@@ -109,11 +118,11 @@
               <div class="trend-chart" id="dlt-trend-chart"></div>
               <div class="hot-cold-panel">
                 <div class="hot-panel">
-                  <h4>热门号码</h4>
+                  <h4>🔥 热门号码</h4>
                   <div id="dlt-hot-numbers"></div>
                 </div>
                 <div class="cold-panel">
-                  <h4>冷门号码</h4>
+                  <h4>❄️ 冷门号码</h4>
                   <div id="dlt-cold-numbers"></div>
                 </div>
               </div>
@@ -125,16 +134,21 @@
               <h3>大乐透 - 号码计算</h3>
               <div class="calculator-input">
                 <div class="calc-numbers">
-                  <span>前区号码:</span>
+                  <span>当前选择:</span>
                   <span id="dlt-calc-nums">-</span>
                 </div>
-                <div class="calc-operations">
-                  <button class="btn btn-sm" onclick="calculateDlt('sum')">求和</button>
-                  <button class="btn btn-sm" onclick="calculateDlt('avg')">平均</button>
-                  <button class="btn btn-sm" onclick="calculateDlt('max')">最大</button>
-                  <button class="btn btn-sm" onclick="calculateDlt('min')">最小</button>
-                  <button class="btn btn-sm" onclick="calculateDlt('range')">跨度</button>
-                  <button class="btn btn-sm" onclick="calculateDlt('multiply')">乘积</button>
+                <div class="calc-available">
+                  <span>可选操作:</span>
+                  <div class="calc-buttons">
+                    <button class="btn btn-sm" onclick="calculateDlt('sum')">求和</button>
+                    <button class="btn btn-sm" onclick="calculateDlt('avg')">平均</button>
+                    <button class="btn btn-sm" onclick="calculateDlt('max')">最大</button>
+                    <button class="btn btn-sm" onclick="calculateDlt('min')">最小</button>
+                    <button class="btn btn-sm" onclick="calculateDlt('range')">跨度</button>
+                    <button class="btn btn-sm" onclick="calculateDlt('multiply')">乘积</button>
+                    <button class="btn btn-sm" onclick="calculateDlt('oddEven')">奇偶比</button>
+                    <button class="btn btn-sm" onclick="calculateDlt('size')">大小比</button>
+                  </div>
                 </div>
                 <div class="calc-result">
                   <strong>计算结果:</strong>
@@ -158,13 +172,13 @@
               <h3>双色球 - 号码选择</h3>
               <div class="last-draw">
                 <strong>上一期开奖:</strong> 
-                <span>期号: <span id="ssq-last-issue">2024150</span></span>
+                <span>期号: <span id="ssq-last-issue">2026015</span></span>
                 <span>红球: <span id="ssq-last-reds">05 12 18 23 27 32</span></span>
                 <span>蓝球: <span id="ssq-last-blue">08</span></span>
               </div>
               
-              <div class="number-input">
-                <div class="input-group">
+              <div class="number-selection">
+                <div class="main-selection">
                   <label>红球号码 (选6个, 1-33)</label>
                   <div class="number-grid" id="ssq-red-grid"></div>
                   <div class="selected-info">
@@ -172,14 +186,20 @@
                     <span id="ssq-red-selected" class="selected-nums"></span>
                   </div>
                 </div>
-                <div class="input-group">
+                
+                <div class="secondary-selection">
                   <label>蓝球号码 (选1个, 1-16)</label>
-                  <div class="number-grid" id="ssq-blue-grid"></div>
+                  <div class="number-grid small-grid" id="ssq-blue-grid"></div>
                   <div class="selected-info">
                     <span>已选蓝球:</span>
                     <span id="ssq-blue-selected" class="selected-nums"></span>
                   </div>
                 </div>
+              </div>
+              
+              <div class="analysis-suggestion" id="ssq-suggestion">
+                <h4>📊 选号建议</h4>
+                <div id="ssq-analysis-result">请选择号码后查看分析建议...</div>
               </div>
               
               <div class="actions">
@@ -207,11 +227,11 @@
               <div class="trend-chart" id="ssq-trend-chart"></div>
               <div class="hot-cold-panel">
                 <div class="hot-panel">
-                  <h4>热门号码</h4>
+                  <h4>🔥 热门号码</h4>
                   <div id="ssq-hot-numbers"></div>
                 </div>
                 <div class="cold-panel">
-                  <h4>冷门号码</h4>
+                  <h4>❄️ 冷门号码</h4>
                   <div id="ssq-cold-numbers"></div>
                 </div>
               </div>
@@ -223,16 +243,21 @@
               <h3>双色球 - 号码计算</h3>
               <div class="calculator-input">
                 <div class="calc-numbers">
-                  <span>红球号码:</span>
+                  <span>当前选择:</span>
                   <span id="ssq-calc-nums">-</span>
                 </div>
-                <div class="calc-operations">
-                  <button class="btn btn-sm" onclick="calculateSsq('sum')">求和</button>
-                  <button class="btn btn-sm" onclick="calculateSsq('avg')">平均</button>
-                  <button class="btn btn-sm" onclick="calculateSsq('max')">最大</button>
-                  <button class="btn btn-sm" onclick="calculateSsq('min')">最小</button>
-                  <button class="btn btn-sm" onclick="calculateSsq('range')">跨度</button>
-                  <button class="btn btn-sm" onclick="calculateSsq('multiply')">乘积</button>
+                <div class="calc-available">
+                  <span>可选操作:</span>
+                  <div class="calc-buttons">
+                    <button class="btn btn-sm" onclick="calculateSsq('sum')">求和</button>
+                    <button class="btn btn-sm" onclick="calculateSsq('avg')">平均</button>
+                    <button class="btn btn-sm" onclick="calculateSsq('max')">最大</button>
+                    <button class="btn btn-sm" onclick="calculateSsq('min')">最小</button>
+                    <button class="btn btn-sm" onclick="calculateSsq('range')">跨度</button>
+                    <button class="btn btn-sm" onclick="calculateSsq('multiply')">乘积</button>
+                    <button class="btn btn-sm" onclick="calculateSsq('oddEven')">奇偶比</button>
+                    <button class="btn btn-sm" onclick="calculateSsq('size')">大小比</button>
+                  </div>
                 </div>
                 <div class="calc-result">
                   <strong>计算结果:</strong>
@@ -256,11 +281,11 @@
               <h3>排列三 - 号码选择</h3>
               <div class="last-draw">
                 <strong>上一期开奖:</strong> 
-                <span>期号: <span id="pl3-last-issue">2024150</span></span>
+                <span>期号: <span id="pl3-last-issue">2026015</span></span>
                 <span>开奖号: <span id="pl3-last-nums">5 8 2</span></span>
               </div>
               
-              <div class="position-selector">
+              <div class="position-selector-horizontal">
                 <div class="position-item">
                   <div class="position-label">百位</div>
                   <div class="number-grid small-grid" id="pl3-hundred-grid"></div>
@@ -281,6 +306,11 @@
               <div class="selected-info">
                 <span>已选号码:</span>
                 <span id="pl3-selected" class="selected-nums"></span>
+              </div>
+              
+              <div class="analysis-suggestion" id="pl3-suggestion-box">
+                <h4>📊 选号建议</h4>
+                <div id="pl3-analysis-result">请选择号码后查看分析建议...</div>
               </div>
               
               <div class="actions">
@@ -345,11 +375,11 @@
               <h3>排列五 - 号码选择</h3>
               <div class="last-draw">
                 <strong>上一期开奖:</strong> 
-                <span>期号: <span id="pl5-last-issue">2024150</span></span>
+                <span>期号: <span id="pl5-last-issue">2026015</span></span>
                 <span>开奖号: <span id="pl5-last-nums">3 6 9 1 7</span></span>
               </div>
               
-              <div class="position-selector">
+              <div class="position-selector-horizontal">
                 <div class="position-item">
                   <div class="position-label">万位</div>
                   <div class="number-grid small-grid" id="pl5-ten-thousand-grid"></div>
@@ -380,6 +410,11 @@
               <div class="selected-info">
                 <span>已选号码:</span>
                 <span id="pl5-selected" class="selected-nums"></span>
+              </div>
+              
+              <div class="analysis-suggestion" id="pl5-suggestion-box">
+                <h4>📊 选号建议</h4>
+                <div id="pl5-analysis-result">请选择号码后查看分析建议...</div>
               </div>
               
               <div class="actions">
@@ -431,7 +466,15 @@
         
         <div class="side-card" id="ticket-card">
           <h3>📊 票花分析</h3>
-          <div class="ticket-analysis" id="ticket-analysis-content"></div>
+          <div class="ticket-analysis">
+            <div class="ticket-stats" id="ticket-stats"></div>
+            <div class="ticket-input-section">
+              <label>输入票花:</label>
+              <input type="text" id="ticket-input" placeholder="例如: A B C D E F G" maxlength="100">
+              <button class="btn btn-sm btn-primary" onclick="analyzeTicket()">分析票花</button>
+            </div>
+            <div class="ticket-analysis-result" id="ticket-result"></div>
+          </div>
         </div>
       </aside>
     </div>

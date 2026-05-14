@@ -213,6 +213,9 @@ function updateDltRedDisplay() {
   });
   document.getElementById('dlt-red-selected').textContent = dltRedSelected.join(' ');
   document.getElementById('dlt-calc-nums').textContent = dltRedSelected.join(' ');
+  if (dltRedSelected.length >= 5) {
+    analyzeDltTrend();
+  }
 }
 
 function updateDltBlueDisplay() {
@@ -248,6 +251,9 @@ function updateSsqRedDisplay() {
   });
   document.getElementById('ssq-red-selected').textContent = ssqRedSelected.join(' ');
   document.getElementById('ssq-calc-nums').textContent = ssqRedSelected.join(' ');
+  if (ssqRedSelected.length >= 6) {
+    analyzeSsqTrend();
+  }
 }
 
 function updateSsqBlueDisplay() {
@@ -281,6 +287,10 @@ function updatePl3Display() {
   
   const selected = [pl3Hundred, pl3Ten, pl3Unit].map(v => v !== null ? v : '_').join(' ');
   document.getElementById('pl3-selected').textContent = selected;
+  
+  if (pl3Hundred !== null && pl3Ten !== null && pl3Unit !== null) {
+    analyzePl3Trend();
+  }
 }
 
 function selectPl5Position(pos, num) {
@@ -307,6 +317,11 @@ function updatePl5Display() {
   
   const selected = values.map(v => v !== null ? v : '_').join(' ');
   document.getElementById('pl5-selected').textContent = selected;
+  
+  const allSelected = values.every(v => v !== null);
+  if (allSelected) {
+    analyzePl5Trend();
+  }
 }
 
 function generateNumbers(type) {
@@ -531,7 +546,7 @@ function loadPl5History() {
 
 function generateMockDltHistory() {
   const history = [];
-  for (let i = 150; i >= 130; i--) {
+  for (let i = 150; i >= 1; i--) {
     const reds = [];
     while (reds.length < 5) {
       const num = Math.floor(Math.random() * 35) + 1;
@@ -545,7 +560,7 @@ function generateMockDltHistory() {
     }
     blues.sort((a, b) => a - b);
     history.push({
-      issue: `2024${i.toString().padStart(3, '0')}`,
+      issue: `2026${i.toString().padStart(3, '0')}`,
       reds,
       blues,
       sum: reds.reduce((a, b) => a + b, 0),
@@ -557,7 +572,7 @@ function generateMockDltHistory() {
 
 function generateMockSsqHistory() {
   const history = [];
-  for (let i = 150; i >= 130; i--) {
+  for (let i = 150; i >= 1; i--) {
     const reds = [];
     while (reds.length < 6) {
       const num = Math.floor(Math.random() * 33) + 1;
@@ -566,7 +581,7 @@ function generateMockSsqHistory() {
     reds.sort((a, b) => a - b);
     const blue = Math.floor(Math.random() * 16) + 1;
     history.push({
-      issue: `2024${i.toString().padStart(3, '0')}`,
+      issue: `2026${i.toString().padStart(3, '0')}`,
       reds,
       blue,
       sum: reds.reduce((a, b) => a + b, 0),
@@ -578,14 +593,14 @@ function generateMockSsqHistory() {
 
 function generateMockPl3History() {
   const history = [];
-  for (let i = 150; i >= 130; i--) {
+  for (let i = 300; i >= 1; i--) {
     const nums = [
       Math.floor(Math.random() * 10),
       Math.floor(Math.random() * 10),
       Math.floor(Math.random() * 10)
     ];
     history.push({
-      issue: `2024${i.toString().padStart(3, '0')}`,
+      issue: `2026${i.toString().padStart(3, '0')}`,
       nums,
       sum: nums.reduce((a, b) => a + b, 0)
     });
@@ -595,7 +610,7 @@ function generateMockPl3History() {
 
 function generateMockPl5History() {
   const history = [];
-  for (let i = 150; i >= 130; i--) {
+  for (let i = 300; i >= 1; i--) {
     const nums = [
       Math.floor(Math.random() * 10),
       Math.floor(Math.random() * 10),
@@ -604,7 +619,7 @@ function generateMockPl5History() {
       Math.floor(Math.random() * 10)
     ];
     history.push({
-      issue: `2024${i.toString().padStart(3, '0')}`,
+      issue: `2026${i.toString().padStart(3, '0')}`,
       nums,
       sum: nums.reduce((a, b) => a + b, 0)
     });
@@ -638,6 +653,16 @@ function calculateDlt(op) {
     case 'multiply':
       result = dltRedSelected.reduce((a, b) => a * b, 1);
       break;
+    case 'oddEven':
+      const dltOdd = dltRedSelected.filter(n => n % 2 === 1).length;
+      const dltEven = dltRedSelected.length - dltOdd;
+      result = `${dltOdd}:${dltEven}`;
+      break;
+    case 'size':
+      const dltBig = dltRedSelected.filter(n => n > 18).length;
+      const dltSmall = dltRedSelected.length - dltBig;
+      result = `${dltBig}:${dltSmall}`;
+      break;
   }
   document.getElementById('dlt-calc-result').textContent = result;
 }
@@ -668,8 +693,139 @@ function calculateSsq(op) {
     case 'multiply':
       result = ssqRedSelected.reduce((a, b) => a * b, 1);
       break;
+    case 'oddEven':
+      const ssqOdd = ssqRedSelected.filter(n => n % 2 === 1).length;
+      const ssqEven = ssqRedSelected.length - ssqOdd;
+      result = `${ssqOdd}:${ssqEven}`;
+      break;
+    case 'size':
+      const ssqBig = ssqRedSelected.filter(n => n > 17).length;
+      const ssqSmall = ssqRedSelected.length - ssqBig;
+      result = `${ssqBig}:${ssqSmall}`;
+      break;
   }
   document.getElementById('ssq-calc-result').textContent = result;
+}
+
+function analyzePl3Trend() {
+  const history = generateMockPl3History().slice(0, 30);
+  const nums = [pl3Hundred, pl3Ten, pl3Unit];
+  const analysis = generatePlTrendAnalysis(nums, history, 3);
+  document.getElementById('pl3-analysis-result').innerHTML = formatPlAnalysisResult(analysis);
+}
+
+function analyzePl5Trend() {
+  const history = generateMockPl5History().slice(0, 30);
+  const nums = [pl5TenThousand, pl5Thousand, pl5Hundred, pl5Ten, pl5Unit];
+  const analysis = generatePlTrendAnalysis(nums, history, 5);
+  document.getElementById('pl5-analysis-result').innerHTML = formatPlAnalysisResult(analysis);
+}
+
+function generatePlTrendAnalysis(nums, history, digits) {
+  const result = {
+    hotMatches: [],
+    coldMatches: [],
+    sumAnalysis: '',
+    oddEvenAnalysis: '',
+    repeatAnalysis: '',
+    suggestions: []
+  };
+
+  const positionFreq = Array(digits).fill(null).map(() => ({}));
+  
+  history.forEach(h => {
+    h.nums.forEach((n, pos) => {
+      if (pos < digits) {
+        positionFreq[pos][n] = (positionFreq[pos][n] || 0) + 1;
+      }
+    });
+  });
+
+  const posNames = digits === 3 ? ['百位', '十位', '个位'] : ['万位', '千位', '百位', '十位', '个位'];
+  
+  nums.forEach((num, pos) => {
+    const freq = positionFreq[pos][num] || 0;
+    if (freq >= 5) {
+      result.hotMatches.push({ pos: posNames[pos], num, freq });
+    }
+    if (freq <= 1) {
+      result.coldMatches.push({ pos: posNames[pos], num, freq });
+    }
+  });
+
+  const sum = nums.reduce((a, b) => a + b, 0);
+  if (sum >= 10 && sum <= 20) {
+    result.sumAnalysis = `和值 ${sum}，处于理想范围 (10-20)`;
+  } else if (sum < 10) {
+    result.sumAnalysis = `和值 ${sum}，偏小`;
+  } else {
+    result.sumAnalysis = `和值 ${sum}，偏大`;
+  }
+
+  const oddCount = nums.filter(n => n % 2 === 1).length;
+  const evenCount = digits - oddCount;
+  if (Math.abs(oddCount - evenCount) <= 1) {
+    result.oddEvenAnalysis = `奇偶比 ${oddCount}:${evenCount}，比例均衡`;
+  } else {
+    result.oddEvenAnalysis = `奇偶比 ${oddCount}:${evenCount}，比例失衡`;
+  }
+
+  const uniqueCount = [...new Set(nums)].length;
+  if (uniqueCount === digits) {
+    result.repeatAnalysis = '无重复号码，组六形态';
+  } else if (uniqueCount === digits - 1) {
+    result.repeatAnalysis = '有1个重复号码，组三形态';
+  } else {
+    result.repeatAnalysis = '豹子形态（三个号码相同）';
+  }
+
+  if (result.hotMatches.length >= 2) {
+    result.suggestions.push('⚠️ 热号较多，建议适当调整');
+  }
+  if (result.coldMatches.length >= 2) {
+    result.suggestions.push('⚠️ 冷号较多，谨慎选择');
+  }
+  if (result.oddEvenAnalysis.includes('均衡')) {
+    result.suggestions.push('✅ 奇偶比例合理');
+  }
+  if (result.sumAnalysis.includes('理想')) {
+    result.suggestions.push('✅ 和值范围理想');
+  }
+
+  return result;
+}
+
+function formatPlAnalysisResult(analysis) {
+  let html = '';
+  
+  if (analysis.hotMatches.length > 0) {
+    html += `<div style="margin-bottom: 10px;">
+      <strong>🔥 热号位置:</strong><br>
+      ${analysis.hotMatches.map(m => `${m.pos}${m.num} (${m.freq}次)`).join(', ')}
+    </div>`;
+  }
+  
+  if (analysis.coldMatches.length > 0) {
+    html += `<div style="margin-bottom: 10px;">
+      <strong>❄️ 冷号位置:</strong><br>
+      ${analysis.coldMatches.map(m => `${m.pos}${m.num} (${m.freq}次)`).join(', ')}
+    </div>`;
+  }
+  
+  html += `<div style="margin-bottom: 10px;">${analysis.sumAnalysis}</div>`;
+  html += `<div style="margin-bottom: 10px;">${analysis.oddEvenAnalysis}</div>`;
+  html += `<div style="margin-bottom: 10px;">${analysis.repeatAnalysis}</div>`;
+  
+  if (analysis.suggestions.length > 0) {
+    html += `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc;">
+      <strong>💡 综合建议:</strong>
+      <ul style="margin: 5px 0 0 20px; padding: 0;">
+        ${analysis.suggestions.map(s => `<li style="font-size: 12px;">${s}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+  
+  return html;
 }
 
 function generatePl3Suggestion() {
@@ -789,26 +945,18 @@ function updateTicketAnalysis() {
   const pl5Count = tickets.filter(t => t.type === 'pl5').length;
   const total = tickets.length;
   
-  document.getElementById('ticket-analysis-content').innerHTML = `
-    <div class="analysis-item">
-      <span class="analysis-label">累计保存:</span>
-      <span class="analysis-value">${total} 注</span>
-    </div>
-    <div class="analysis-item">
-      <span class="analysis-label">大乐透:</span>
-      <span class="analysis-value">${dltCount} 注</span>
-    </div>
-    <div class="analysis-item">
-      <span class="analysis-label">双色球:</span>
-      <span class="analysis-value">${ssqCount} 注</span>
-    </div>
-    <div class="analysis-item">
-      <span class="analysis-label">排列三:</span>
-      <span class="analysis-value">${pl3Count} 注</span>
-    </div>
-    <div class="analysis-item">
-      <span class="analysis-label">排列五:</span>
-      <span class="analysis-value">${pl5Count} 注</span>
+  document.getElementById('ticket-stats').innerHTML = `
+    <div class="analysis-summary">
+      <div class="summary-item">
+        <span class="summary-label">累计保存:</span>
+        <span class="summary-value">${total}</span>
+      </div>
+      <div class="summary-row">
+        <span>大乐透: ${dltCount}</span>
+        <span>双色球: ${ssqCount}</span>
+        <span>排列三: ${pl3Count}</span>
+        <span>排列五: ${pl5Count}</span>
+      </div>
     </div>
   `;
 }
@@ -939,3 +1087,201 @@ document.querySelectorAll('.section-btn').forEach(btn => {
     document.getElementById(`${currentTab}-${section}`).classList.add('active');
   });
 });
+
+function analyzeDltTrend() {
+  const history = generateMockDltHistory().slice(0, 30);
+  const analysis = generateTrendAnalysis(dltRedSelected, dltBlueSelected, history, 'dlt');
+  document.getElementById('dlt-analysis-result').innerHTML = formatAnalysisResult(analysis);
+}
+
+function analyzeSsqTrend() {
+  const history = generateMockSsqHistory().slice(0, 30);
+  const analysis = generateTrendAnalysis(ssqRedSelected, ssqBlueSelected, history, 'ssq');
+  document.getElementById('ssq-analysis-result').innerHTML = formatAnalysisResult(analysis);
+}
+
+function generateTrendAnalysis(reds, blues, history, type) {
+  const result = {
+    hotMatches: [],
+    coldMatches: [],
+    recentAppearances: [],
+    sumAnalysis: '',
+    oddEvenAnalysis: '',
+    sizeAnalysis: '',
+    suggestions: []
+  };
+
+  const redFrequency = {};
+  const blueFrequency = {};
+  
+  history.forEach(h => {
+    h.reds.forEach(r => {
+      redFrequency[r] = (redFrequency[r] || 0) + 1;
+    });
+    if (type === 'dlt') {
+      h.blues.forEach(b => {
+        blueFrequency[b] = (blueFrequency[b] || 0) + 1;
+      });
+    } else {
+      blueFrequency[h.blue] = (blueFrequency[h.blue] || 0) + 1;
+    }
+  });
+
+  const hotReds = Object.entries(redFrequency).filter(([k, v]) => v >= 4).map(([k]) => parseInt(k));
+  const coldReds = Object.entries(redFrequency).filter(([k, v]) => v <= 1).map(([k]) => parseInt(k));
+
+  reds.forEach(r => {
+    const freq = redFrequency[r] || 0;
+    if (hotReds.includes(r)) {
+      result.hotMatches.push({ num: r, freq });
+    }
+    if (coldReds.includes(r)) {
+      result.coldMatches.push({ num: r, freq });
+    }
+    result.recentAppearances.push({ num: r, freq });
+  });
+
+  const sum = reds.reduce((a, b) => a + b, 0);
+  const avgSum = history.reduce((acc, h) => acc + h.reds.reduce((a, b) => a + b, 0), 0) / history.length;
+  
+  if (type === 'dlt') {
+    if (sum >= 70 && sum <= 100) {
+      result.sumAnalysis = `和值 ${sum}，处于理想范围 (70-100)`;
+    } else if (sum < 70) {
+      result.sumAnalysis = `和值 ${sum}，偏小，建议增加大号`;
+    } else {
+      result.sumAnalysis = `和值 ${sum}，偏大，建议增加小号`;
+    }
+  } else {
+    if (sum >= 80 && sum <= 130) {
+      result.sumAnalysis = `和值 ${sum}，处于理想范围 (80-130)`;
+    } else if (sum < 80) {
+      result.sumAnalysis = `和值 ${sum}，偏小，建议增加大号`;
+    } else {
+      result.sumAnalysis = `和值 ${sum}，偏大，建议增加小号`;
+    }
+  }
+
+  const oddCount = reds.filter(r => r % 2 === 1).length;
+  const evenCount = reds.length - oddCount;
+  if (Math.abs(oddCount - evenCount) <= 1) {
+    result.oddEvenAnalysis = `奇偶比 ${oddCount}:${evenCount}，比例均衡，推荐`;
+  } else {
+    result.oddEvenAnalysis = `奇偶比 ${oddCount}:${evenCount}，比例失衡，建议调整`;
+  }
+
+  const half = type === 'dlt' ? 18 : 17;
+  const bigCount = reds.filter(r => r > half).length;
+  const smallCount = reds.length - bigCount;
+  if (Math.abs(bigCount - smallCount) <= 1) {
+    result.sizeAnalysis = `大小比 ${bigCount}:${smallCount}，比例均衡，推荐`;
+  } else {
+    result.sizeAnalysis = `大小比 ${bigCount}:${smallCount}，比例失衡，建议调整`;
+  }
+
+  if (result.hotMatches.length >= 3) {
+    result.suggestions.push('⚠️ 热号过多，建议适当替换1-2个');
+  }
+  if (result.coldMatches.length >= 2) {
+    result.suggestions.push('⚠️ 冷号较多，谨慎选择');
+  }
+  if (result.oddEvenAnalysis.includes('均衡')) {
+    result.suggestions.push('✅ 奇偶比例合理');
+  }
+  if (result.sizeAnalysis.includes('均衡')) {
+    result.suggestions.push('✅ 大小比例合理');
+  }
+  if (result.sumAnalysis.includes('理想')) {
+    result.suggestions.push('✅ 和值范围理想');
+  }
+
+  return result;
+}
+
+function formatAnalysisResult(analysis) {
+  let html = '';
+  
+  if (analysis.hotMatches.length > 0) {
+    html += `<div style="margin-bottom: 10px;">
+      <strong>🔥 热号匹配:</strong> ${analysis.hotMatches.map(m => `${m.num}(${m.freq}次)`).join(', ')}
+    </div>`;
+  }
+  
+  if (analysis.coldMatches.length > 0) {
+    html += `<div style="margin-bottom: 10px;">
+      <strong>❄️ 冷号匹配:</strong> ${analysis.coldMatches.map(m => `${m.num}(${m.freq}次)`).join(', ')}
+    </div>`;
+  }
+  
+  html += `<div style="margin-bottom: 10px;">${analysis.sumAnalysis}</div>`;
+  html += `<div style="margin-bottom: 10px;">${analysis.oddEvenAnalysis}</div>`;
+  html += `<div style="margin-bottom: 10px;">${analysis.sizeAnalysis}</div>`;
+  
+  if (analysis.suggestions.length > 0) {
+    html += `<div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed #ccc;">
+      <strong>💡 综合建议:</strong>
+      <ul style="margin: 5px 0 0 20px; padding: 0;">
+        ${analysis.suggestions.map(s => `<li style="font-size: 12px;">${s}</li>`).join('')}
+      </ul>
+    </div>`;
+  }
+  
+  return html;
+}
+
+const TICKET_FLOWER_MAP = {
+  'A': { name: '龙头', description: '通常指前区第一个号码', suggest: '建议关注小号区域1-12' },
+  'B': { name: '凤尾', description: '通常指前区最后一个号码', suggest: '建议关注大号区域24-35' },
+  'C': { name: '连号', description: '相邻的两个或多个号码', suggest: '常见连号组合: 03 04, 12 13, 28 29' },
+  'D': { name: '奇偶', description: '号码的奇偶属性', suggest: '建议奇偶比例搭配: 3奇2偶或2奇3偶' },
+  'E': { name: '大小', description: '号码的大小属性', suggest: '建议大小比例搭配: 3大2小或2大3小' },
+  'F': { name: '质数', description: '只能被1和自身整除的数', suggest: '常见质数: 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31' },
+  'G': { name: '重复', description: '与上期重复的号码', suggest: '每期通常有1-2个重复号码' },
+  'H': { name: '跨距', description: '最大号码与最小号码之差', suggest: '常见跨距: 15-25之间' },
+  'I': { name: '和值', description: '所有号码之和', suggest: '大乐透前区和值常见: 70-100' },
+  'J': { name: 'AC值', description: '号码的复杂程度', suggest: 'AC值常见: 5-8之间' },
+  'K': { name: '冷号', description: '长时间未出现的号码', suggest: '关注遗漏超过10期的号码' },
+  'L': { name: '热号', description: '近期频繁出现的号码', suggest: '关注最近5期内出现2次以上的号码' },
+  'M': { name: '温号', description: '出现频率适中的号码', suggest: '冷热温搭配选择' },
+  'N': { name: '形态', description: '号码的组合形态', suggest: '关注: 顺子、对子、豹子等形态' },
+  'O': { name: '区间', description: '号码的区间分布', suggest: '建议各区均匀分布' }
+};
+
+function analyzeTicket() {
+  const input = document.getElementById('ticket-input').value.trim().toUpperCase();
+  const resultDiv = document.getElementById('ticket-result');
+  
+  if (!input) {
+    resultDiv.innerHTML = '<p style="color: #e53935;">请输入票花字母（如: A B C）</p>';
+    return;
+  }
+  
+  const flowers = input.split(/[\s,，、]+/).filter(f => f && TICKET_FLOWER_MAP[f]);
+  
+  if (flowers.length === 0) {
+    resultDiv.innerHTML = '<p style="color: #e53935;">未识别到有效票花字母，请输入 A-O 之间的字母</p>';
+    return;
+  }
+  
+  let html = '<h4>🎯 票花解读结果</h4>';
+  html += '<div style="margin-top: 10px;">';
+  
+  flowers.forEach(flower => {
+    const info = TICKET_FLOWER_MAP[flower];
+    html += `
+      <div class="ticket-flower-item">
+        <div class="flower-letter">${flower}</div>
+        <div class="flower-info">
+          <strong>${info.name}</strong>
+          <p style="margin: 5px 0; font-size: 12px; color: #666;">${info.description}</p>
+          <p style="font-size: 12px; color: #2e7d32; background: #e8f5e9; padding: 8px; border-radius: 5px;">💡 ${info.suggest}</p>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  html += '<p style="font-size: 11px; color: #999; margin-top: 15px;">* 票花分析仅供参考，不构成购彩建议</p>';
+  
+  resultDiv.innerHTML = html;
+}
